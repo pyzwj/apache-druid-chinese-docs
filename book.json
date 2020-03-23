@@ -20,8 +20,8 @@
         "highlight",
         "back-to-top-button",
         "chapter-fold",
-        "page-treeview",
-        "pageview-count"
+        "pageview-count",
+        "flexible-alerts"
     ],
     "pluginsConfig": {
         "github": {
