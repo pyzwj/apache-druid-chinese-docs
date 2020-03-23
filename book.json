@@ -1,0 +1,46 @@
+{
+    "title": "Apache Druid中文文档",
+    "author": "Jian-Huan LIU",
+    "description": "",
+    "language": "zh-hans",
+    "gitbook": "3.2.3",
+    "styles": {
+        "website": "./styles/website.css"
+    },
+    "structure": {
+        "readme": "README.md"
+    },
+    "plugins": [
+        "-sharing",
+        "splitter",
+        "expandable-chapters-small",
+        "anchors",
+        "github",
+        "github-buttons",
+        "donate"
+    ],
+    "pluginsConfig": {
+        "github": {
+            "url": "https://github.com/liujianhuanzz/apache-druid-chinese-docs.git"
+        },
+        "github-buttons": {
+            "buttons": [{
+                "user": "Jian-Huan LIU",
+                "repo": "glory",
+                "type": "star",
+                "size": "small",
+                "count": true
+                }
+            ]
+        },
+        "donate": {
+            "alipay": "./source/images/donate.png",
+            "title": "",
+            "button": "赞赏",
+            "alipayText": " "
+        },
+        "anchor-navigation-ex": {
+            "showLevel": false
+        }
+    }
+}
