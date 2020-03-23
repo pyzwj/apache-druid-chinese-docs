@@ -14,7 +14,7 @@
 
 * [配置列表](Configuration/index.md)
 
-* [操作指南](Operation/index.md)
+* [操作指南](Operations/index.md)
 
 * [开发指南](Development/index.md)
 
