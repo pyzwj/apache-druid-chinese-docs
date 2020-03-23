@@ -13,34 +13,11 @@
     "plugins": [
         "-sharing",
         "splitter",
-        "expandable-chapters-small",
-        "anchors",
-        "github",
-        "github-buttons",
-        "donate"
+        "expandable-chapters-small"
     ],
     "pluginsConfig": {
         "github": {
             "url": "https://github.com/liujianhuanzz/apache-druid-chinese-docs.git"
-        },
-        "github-buttons": {
-            "buttons": [{
-                "user": "Jian-Huan LIU",
-                "repo": "glory",
-                "type": "star",
-                "size": "small",
-                "count": true
-                }
-            ]
-        },
-        "donate": {
-            "alipay": "./source/images/donate.png",
-            "title": "",
-            "button": "赞赏",
-            "alipayText": " "
-        },
-        "anchor-navigation-ex": {
-            "showLevel": false
         }
     }
 }
