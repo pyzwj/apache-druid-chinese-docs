@@ -13,11 +13,24 @@
     "plugins": [
         "-sharing",
         "splitter",
-        "expandable-chapters-small"
+        "expandable-chapters-small",
+        "anchors",
+        "github",
+        "github-buttons"
     ],
     "pluginsConfig": {
         "github": {
             "url": "https://github.com/liujianhuanzz/apache-druid-chinese-docs.git"
+        },
+        "github-buttons": {
+            "buttons": [{
+                "user": "Jian-Huan LIU",
+                "repo": "glory",
+                "type": "star",
+                "size": "small",
+                "count": true
+                }
+            ]
         }
     }
 }

@@ -1,2 +1,1 @@
-# apache-druid-chinese-docs
-Apache Druid中文文档
+Apache Druid 中文文档
