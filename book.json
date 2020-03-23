@@ -16,7 +16,12 @@
         "expandable-chapters-small",
         "anchors",
         "github",
-        "github-buttons"
+        "github-buttons",
+        "highlight",
+        "back-to-top-button",
+        "chapter-fold",
+        "page-treeview",
+        "pageview-count"
     ],
     "pluginsConfig": {
         "github": {
