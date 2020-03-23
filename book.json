@@ -21,7 +21,8 @@
         "back-to-top-button",
         "chapter-fold",
         "pageview-count",
-        "flexible-alerts"
+        "flexible-alerts",
+        "code"
     ],
     "pluginsConfig": {
         "github": {
