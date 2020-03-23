@@ -24,8 +24,8 @@
         },
         "github-buttons": {
             "buttons": [{
-                "user": "Jian-Huan LIU",
-                "repo": "glory",
+                "user": "liujianhuanzz",
+                "repo": "apache-druid-chinese-docs",
                 "type": "star",
                 "size": "small",
                 "count": true
