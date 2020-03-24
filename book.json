@@ -14,33 +14,26 @@
         "-sharing",
         "splitter",
         "expandable-chapters-small",
-        "github",
-        "github-buttons",
+        "github-buttons@2.1.0",
         "prism",
         "back-to-top-button",
         "chapter-fold",
         "pageview-count",
         "flexible-alerts",
-        "atoc"
+        "atoc",
+        "edit-link"
     ],
     "pluginsConfig": {
-        "github": {
-            "url": "https://github.com/liujianhuanzz/apache-druid-chinese-docs.git"
+        "edit-link": {
+            "base": "https://github.com/liujianhuanzz/apache-druid-chinese-docs.git",
+            "label": "Edit"
         },
         "github-buttons": {
-            "buttons": [{
-                "user": "liujianhuanzz",
-                "repo": "apache-druid-chinese-docs",
-                "type": "star",
-                "size": "small",
-                "count": true
-                }, {
-                    "user": "liujianhuanzz",
-                    "type": "fork",
-                    "size": "small",
-                    "count": true
-                }
-            ]
+            "repo": "liujianhuanzz/apache-druid-chinese-docs",
+            "types": [
+                "star","fork"
+            ],
+            "size": "small"
         },
         "atoc": {
             "addClass": true,
