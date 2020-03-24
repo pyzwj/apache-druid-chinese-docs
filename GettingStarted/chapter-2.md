@@ -23,8 +23,29 @@ Druid安装包提供了几个[单服务器配置](./chapter-3.md)的示例，以
 如果您打算在本教程之外使用单机部署进行进一步试验评估，则建议使用比`micro-quickstart`更大的配置。
 
 #### 入门开始
+
+[下载](https://www.apache.org/dyn/closer.cgi?path=/druid/0.17.0/apache-druid-0.17.0-bin.tar.gz)Druid最新0.17.0release安装包
+
+在终端中运行以下命令来提取Druid
+
+```
+tar -xzf apache-druid-0.17.0-bin.tar.gz
+cd apache-druid-0.17.0
+```
+
+在安装包中有以下文件：
+
+* `LICENSE`和`NOTICE`文件
+* `bin/*` - 启停等脚本
+* `conf/*` - 用于单节点部署和集群部署的示例配置
+* `extensions/*` - Druid核心扩展
+* `hadoop-dependencies/*` - Druid Hadoop依赖
+* `lib/*` - Druid核心库和依赖
+* `quickstart/*` - 配置文件，样例数据，以及快速入门教材的其他文件
+
+
 #### 启动服务
 #### 加载数据
 ##### 教程使用的数据集
-##### 大数据加载教程
+##### 数据加载
 ##### 重置集群状态
