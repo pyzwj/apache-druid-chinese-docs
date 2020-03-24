@@ -33,24 +33,15 @@
                 "user": "liujianhuanzz",
                 "repo": "apache-druid-chinese-docs",
                 "type": "star",
-                "size": "large",
+                "size": "small",
                 "count": true
                 }, {
                     "user": "liujianhuanzz",
                     "type": "fork",
-                    "size": "large",
-                    "count": true
-                }, {
-                    "user": "liujianhuanzz",
-                    "type": "follow",
-                    "size": "large",
+                    "size": "small",
                     "count": true
                 }
             ]
-        },
-        "toc": {
-            "addClass": true,
-            "className": "toc"
         }
     }
 }
