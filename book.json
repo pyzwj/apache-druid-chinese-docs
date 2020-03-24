@@ -14,7 +14,6 @@
         "-sharing",
         "splitter",
         "expandable-chapters-small",
-        "anchorjs",
         "github",
         "github-buttons",
         "prism",
@@ -43,14 +42,9 @@
                 }
             ]
         },
-        "anchorjs": {
-            "selector": "h2,h3,h4,h5",
-            "icon": "#",
-            "placement": "right",
-            "visible": "always",
-            "class": "custom-class another-one",
-            "truncate": 64,
-            "ariaLabel": "Anchor"
+        "toc": {
+            "addClass": true,
+            "className": "toc"
         }
     }
 }
