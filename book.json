@@ -17,12 +17,12 @@
         "anchors",
         "github",
         "github-buttons",
-        "highlight",
+        "prism",
         "back-to-top-button",
         "chapter-fold",
         "pageview-count",
         "flexible-alerts",
-        "code"
+        "toc"
     ],
     "pluginsConfig": {
         "github": {
@@ -35,6 +35,11 @@
                 "type": "star",
                 "size": "small",
                 "count": true
+                }, {
+                    "user": "liujianhuanzz",
+                    "type": "follow",
+                    "size": "small",
+                    "count": true
                 }
             ]
         }
