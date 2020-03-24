@@ -21,7 +21,7 @@
         "chapter-fold",
         "pageview-count",
         "flexible-alerts",
-        "toc"
+        "atoc"
     ],
     "pluginsConfig": {
         "github": {
@@ -42,9 +42,9 @@
                 }
             ]
         },
-        "toc": {
+        "atoc": {
             "addClass": true,
-            "className": "toc"
+            "className": "atoc"
         }
     }
 }
