@@ -25,8 +25,8 @@
     ],
     "pluginsConfig": {
         "edit-link": {
-            "base": "https://github.com/liujianhuanzz/apache-druid-chinese-docs.git",
-            "label": "Edit"
+            "base": "https://github.com/liujianhuanzz/apache-druid-chinese-docs/edit/master",
+            "label": "Edit This Page"
         },
         "github-buttons": {
             "repo": "liujianhuanzz/apache-druid-chinese-docs",
