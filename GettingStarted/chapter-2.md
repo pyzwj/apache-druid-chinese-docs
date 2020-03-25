@@ -136,5 +136,18 @@ $ ./bin/start-micro-quickstart
 * [从Hadoop加载数据](../Tutorials/chapter-3.md) - 本教程演示了如何使用远程Hadoop集群执行批处理文件加载
 * [编写一个自己的数据摄取说明](../Tutorials/chapter-10.md) - 本教程演示了如何编写新的数据摄取说明并使用它来加载数据
 
-
 ##### 重置集群状态
+
+如果要在清理服务后重新启动，请删除`var`目录，然后再次运行`bin/start-micro-quickstart`脚本。
+
+一旦每个服务都启动，您就可以加载数据了。
+
+##### 重置Kafka
+
+如果您完成了[教程：从Kafka加载流数据](../Tutorials/chapter-2.md)并希望重置集群状态，则还应该清除所有Kafka状态。
+
+在停止ZooKeeper和Druid服务之前，使用`CTRL-C`关闭`Kafka Broker`，然后删除`/tmp/kafka-logs`中的Kafka日志目录：
+
+```
+rm -rf /tmp/kafka-logs
+```
