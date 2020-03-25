@@ -6,7 +6,7 @@
 
 * [Druid介绍](GettingStarted/chapter-1.md)
 * [快速开始](GettingStarted/chapter-2.md)
-* [单节点部署](GettingStarted/chapter-3.md)
+* [单服务器部署](GettingStarted/chapter-3.md)
 * [集群部署](GettingStarted/chapter-4.md)
 
 ### 使用指导
