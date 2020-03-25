@@ -76,5 +76,65 @@ $ ./bin/start-micro-quickstart
 
 #### 加载数据
 ##### 教程使用的数据集
+
+对于以下数据加载教程，我们提供了一个示例数据文件，其中包含2015年9月12日发生的Wikipedia页面编辑事件。
+
+该样本数据位于Druid包根目录的`quickstart/tutorial/wikiticker-2015-09-12-sampled.json.gz`中,页面编辑事件作为JSON对象存储在文本文件中。
+
+示例数据包含以下几列，示例事件如下所示：
+
+* added
+* channel
+* cityName
+* comment
+* countryIsoCode
+* countryName
+* deleted
+* delta
+* isAnonymous
+* isMinor
+* isNew
+* isRobot
+* isUnpatrolled
+* metroCode
+* namespace
+* page
+* regionIsoCode
+* regionName
+* user
+
+```
+{
+  "timestamp":"2015-09-12T20:03:45.018Z",
+  "channel":"#en.wikipedia",
+  "namespace":"Main",
+  "page":"Spider-Man's powers and equipment",
+  "user":"foobar",
+  "comment":"/* Artificial web-shooters */",
+  "cityName":"New York",
+  "regionName":"New York",
+  "regionIsoCode":"NY",
+  "countryName":"United States",
+  "countryIsoCode":"US",
+  "isAnonymous":false,
+  "isNew":false,
+  "isMinor":false,
+  "isRobot":false,
+  "isUnpatrolled":false,
+  "added":99,
+  "delta":99,
+  "deleted":0,
+}
+```
+
 ##### 数据加载
+
+以下教程演示了将数据加载到Druid的各种方法，包括批处理和流处理用例。 所有教程均假定您使用的是上面提到的`micro-quickstart`单机配置。
+
+* [加载本地文件](../Tutorials/chapter-1.md) - 本教程演示了如何使用Druid的本地批处理摄取来执行批文件加载
+* [从Kafka加载流数据](../Tutorials/chapter-2.md) - 本教程演示了如何从Kafka主题加载流数据
+* [从Hadoop加载数据](../Tutorials/chapter-3.md) - 本教程演示了如何使用远程Hadoop集群执行批处理文件加载
+* [编写一个自己的数据摄取说明](../Tutorials/chapter-10.md) - 本教程演示了如何编写新的数据摄取说明并使用它来加载数据
+
+
 ##### 重置集群状态
