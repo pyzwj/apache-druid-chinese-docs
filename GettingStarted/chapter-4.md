@@ -100,11 +100,65 @@ Query服务的硬件选择主要考虑可用的CPU、Broker服务的堆内和堆
 [基本集群调优指南]()包含有关如何计算Broker和Router服务内存使用量的信息。
 
 ### 选择操作系统
-### 下载安装包
+
+我们建议运行您喜欢的Linux发行版，同时还需要：
+
+* **Java 8**
+
+> [!WARNING]
+> Druid服务运行依赖Java 8，可以使用环境变量`DRUID_JAVA_HOME`或`JAVA_HOME`指定在何处查找Java,有关更多详细信息，请运行`verify-java`脚本。
+
+### 下载发行版
+
+首先，下载并解压缩发布安装包。最好首先在单台计算机上执行此操作，因为您将编辑配置，然后将修改后的配置分发到所有服务器上。
+
+[下载](https://www.apache.org/dyn/closer.cgi?path=/druid/0.17.0/apache-druid-0.17.0-bin.tar.gz)Druid最新0.17.0release安装包
+
+在终端中运行以下命令来提取Druid
+
+```
+tar -xzf apache-druid-0.17.0-bin.tar.gz
+cd apache-druid-0.17.0
+```
+
+在安装包中有以下文件：
+
+* `LICENSE`和`NOTICE`文件
+* `bin/*` - 启停等脚本
+* `conf/druid/cluster/*` - 用于集群部署的模板配置
+* `extensions/*` - Druid核心扩展
+* `hadoop-dependencies/*` - Druid Hadoop依赖
+* `lib/*` - Druid核心库和依赖
+* `quickstart/*` - 与[快速入门](./chapter-2.md)相关的文件
+
+我们主要是编辑`conf/druid/cluster/`中的文件。
+
 #### 从单服务器环境迁移部署
+
+在以下各节中，我们将在`conf/druid/cluster`下编辑配置。
+
+如果您已经有一个单服务器部署，请将您的现有配置复制到`conf/druid /cluster`以保留您所做的所有配置更改。
+
 ### 配置元数据存储和深度存储
 #### 从单服务器环境迁移部署
+
+如果您已经有一个单服务器部署，并且希望在整个迁移过程中保留数据，请在更新元数据/深层存储配置之前，按照[元数据迁移]()和[深层存储迁移]()中的说明进行操作。
+
+这些指南针对使用Derby元数据存储和本地深度存储的单服务器部署。 如果您已经在单服务器集群中使用了非Derby元数据存储，则可以在新集群中可以继续使用当前的元数据存储。
+
+这些指南还提供了有关从本地深度存储迁移段的信息。集群部署需要分布式深度存储，例如S3或HDFS。 如果单服务器部署已在使用分布式深度存储，则可以在新集群中继续使用当前的深度存储。
+
 #### 元数据存储
+
+在`conf/druid/cluster/_common/common.runtime.properties`中，使用您将用作元数据存储的服务器地址来替换"metadata.storage.*":
+
+* `druid.metadata.storage.connector.connectURI`
+* `druid.metadata.storage.connector.host`
+
+在生产部署中，我们建议运行专用的元数据存储，例如具有复制功能的MySQL或PostgreSQL，与Druid服务器分开部署。
+
+[MySQL扩展]()和[PostgreSQL]()扩展文档包含有关扩展配置和初始数据库安装的说明。
+
 #### 深度存储
 ##### S3
 ##### HDFS

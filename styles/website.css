@@ -1,3 +1,5 @@
 .atoc {
-    top: 50px !important;
+    top: 50px;
+    max-height: 400px;
+    overflow: auto;
 }
