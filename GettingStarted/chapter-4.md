@@ -160,13 +160,101 @@ cd apache-druid-0.17.0
 [MySQL扩展]()和[PostgreSQL]()扩展文档包含有关扩展配置和初始数据库安装的说明。
 
 #### 深度存储
+
+Druid依赖于分布式文件系统或大对象（blob）存储来存储数据，最常用的深度存储实现是S3（适合于在AWS上）和HDFS（适合于已有Hadoop集群）。
+
 ##### S3
+
+在`conf/druid/cluster/_common/common.runtime.properties`中，
+
+* 在`druid.extension.loadList`配置项中增加"druid-s3-extensions"扩展
+* 注释掉配置文件中用于本地存储的"Deep Storage"和"Indexing service logs"
+* 打开配置文件中关于"For S3"部分中"Deep Storage"和"Indexing service logs"的配置
+
+上述操作之后，您将看到以下的变化：
+
+```
+druid.extensions.loadList=["druid-s3-extensions"]
+
+#druid.storage.type=local
+#druid.storage.storageDirectory=var/druid/segments
+
+druid.storage.type=s3
+druid.storage.bucket=your-bucket
+druid.storage.baseKey=druid/segments
+druid.s3.accessKey=...
+druid.s3.secretKey=...
+
+#druid.indexer.logs.type=file
+#druid.indexer.logs.directory=var/druid/indexing-logs
+
+druid.indexer.logs.type=s3
+druid.indexer.logs.s3Bucket=your-bucket
+druid.indexer.logs.s3Prefix=druid/indexing-logs
+```
+更多信息可以看[S3扩展]()部分的文档。
+
 ##### HDFS
+
+在`conf/druid/cluster/_common/common.runtime.properties`中，
+
+* 在`druid.extension.loadList`配置项中增加"druid-hdfs-storage"扩展
+* 注释掉配置文件中用于本地存储的"Deep Storage"和"Indexing service logs"
+* 打开配置文件中关于"For HDFS"部分中"Deep Storage"和"Indexing service logs"的配置
+
+上述操作之后，您将看到以下的变化：
+
+```
+druid.extensions.loadList=["druid-hdfs-storage"]
+
+#druid.storage.type=local
+#druid.storage.storageDirectory=var/druid/segments
+
+druid.storage.type=hdfs
+druid.storage.storageDirectory=/druid/segments
+
+#druid.indexer.logs.type=file
+#druid.indexer.logs.directory=var/druid/indexing-logs
+
+druid.indexer.logs.type=hdfs
+druid.indexer.logs.directory=/druid/indexing-logs
+```
+
+同时：
+
+* 需要将Hadoop的配置文件（core-site.xml, hdfs-site.xml, yarn-site.xml, mapred-site.xml）放置在Druid进程的classpath中，可以将他们拷贝到`conf/druid/cluster/_common`目录中
+
+更多信息可以看[HDFS扩展]()部分的文档。
+
 ### Hadoop连接配置
+
+如果要从Hadoop集群加载数据，那么此时应对Druid做如下配置：
+
+* 在`conf/druid/cluster/_common/common.runtime.properties`文件中更新`druid.indexer.task.hadoopWorkingPath`配置项，将其更新为您期望的一个用于临时文件存储的HDFS路径。 通常会配置为`druid.indexer.task.hadoopWorkingPath=/tmp/druid-indexing`
+* 需要将Hadoop的配置文件（core-site.xml, hdfs-site.xml, yarn-site.xml, mapred-site.xml）放置在Druid进程的classpath中，可以将他们拷贝到`conf/druid/cluster/_common`目录中
+
+请注意，您无需为了可以从Hadoop加载数据而使用HDFS深度存储。例如，如果您的集群在Amazon Web Services上运行，即使您使用Hadoop或Elastic MapReduce加载数据，我们也建议使用S3进行深度存储。
+
+更多信息可以看[基于Hadoop的数据摄取]()部分的文档。
+
 ### Zookeeper连接配置
+
+在生产集群中，我们建议使用专用的ZK集群，该集群与Druid服务器分开部署。
+
+在 `conf/druid/cluster/_common/common.runtime.properties` 中，将 `druid.zk.service.host` 设置为包含用逗号分隔的host：port对列表的连接字符串，每个对与ZK中的ZooKeeper服务器相对应。（例如" 127.0.0.1:4545"或"127.0.0.1:3000,127.0.0.1:3001、127.0.0.1:3002"）
+
+您也可以选择在Master服务上运行ZK，而不使用专用的ZK集群。如果这样做，我们建议部署3个Master服务，以便您具有ZK仲裁。
+
 ### 配置调整
 #### 从单服务器环境迁移部署
 ##### Master服务
+
+如果您使用的是[单服务器部署示例](./chapter-3.md)中的示例配置，则这些示例中将Coordinator和Overlord进程合并为一个合并的进程。
+
+`conf/druid/cluster/master/coordinator-overlord` 下的示例配置同样合并了Coordinator和Overlord进程。
+
+您可以将现有的 `coordinator-overlord` 配置从单服务器部署复制到`conf/druid/cluster/master/coordinator-overlord`
+
 ##### Data服务
 ##### Query服务
 #### 重新部署
