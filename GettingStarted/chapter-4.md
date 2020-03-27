@@ -87,7 +87,7 @@ Master服务的主要考虑点是可用CPU以及用于Coordinator和Overlord进�
 
 在集群化部署时，出于容错的考虑，最好是部署多个Data服务。
 
-在选择Data服务的硬件时，可以假定一个因子`N`，将原来的单服务器环境的CPU和内存除以`N`,然后在新集群中部署`N`个硬件规格缩小的Data服务。
+在选择Data服务的硬件时，可以假定一个分裂因子`N`，将原来的单服务器环境的CPU和内存除以`N`,然后在新集群中部署`N`个硬件规格缩小的Data服务。
 
 ##### Query服务
 
@@ -256,17 +256,156 @@ druid.indexer.logs.directory=/druid/indexing-logs
 您可以将现有的 `coordinator-overlord` 配置从单服务器部署复制到`conf/druid/cluster/master/coordinator-overlord`
 
 ##### Data服务
+
+假设我们正在从一个32CPU和256GB内存的单服务器部署环境进行迁移，在老的环境中，Historical和MiddleManager使用了如下的配置：
+
+Historical（单服务器）
+
+```
+druid.processing.buffer.sizeBytes=500000000
+druid.processing.numMergeBuffers=8
+druid.processing.numThreads=31
+```
+
+MiddleManager（单服务器）
+
+```
+druid.worker.capacity=8
+druid.indexer.fork.property.druid.processing.numMergeBuffers=2
+druid.indexer.fork.property.druid.processing.buffer.sizeBytes=100000000
+druid.indexer.fork.property.druid.processing.numThreads=1
+```
+
+在集群部署中，我们选择一个分裂因子（假设为2），则部署2个16CPU和128GB内存的Data服务，各项的调整如下：
+
+Historical
+
+* `druid.processing.numThreads`设置为新硬件的（`CPU核数 - 1`）
+* `druid.processing.numMergeBuffers` 使用分裂因子去除单服务部署环境的值
+* `druid.processing.buffer.sizeBytes` 该值保持不变
+
+MiddleManager:
+
+* `druid.worker.capacity`: 使用分裂因子去除单服务部署环境的值
+* `druid.indexer.fork.property.druid.processing.numMergeBuffers`: 该值保持不变
+* `druid.indexer.fork.property.druid.processing.buffer.sizeBytes`: 该值保持不变
+* `druid.indexer.fork.property.druid.processing.numThreads`: 该值保持不变
+
+调整后的结果配置如下：
+
+新的Historical(2 Data服务器)
+
+```
+ druid.processing.buffer.sizeBytes=500000000
+ druid.processing.numMergeBuffers=8
+ druid.processing.numThreads=31
+ ```
+
+新的MiddleManager（2 Data服务器）
+
+```
+druid.worker.capacity=4
+druid.indexer.fork.property.druid.processing.numMergeBuffers=2
+druid.indexer.fork.property.druid.processing.buffer.sizeBytes=100000000
+druid.indexer.fork.property.druid.processing.numThreads=1
+```
+
 ##### Query服务
-#### 重新部署
+
+您可以将现有的Broker和Router配置复制到`conf/druid/cluster/query`下的目录中，无需进行任何修改.
+
+#### 首次部署
+
+如果您正在使用如下描述的示例集群规格：
+
+* 1 Master 服务器(m5.2xlarge)
+* 2 Data 服务器(i3.4xlarge)
+* 1 Query 服务器(m5.2xlarge)
+
+`conf/druid/cluster`下的配置已经为此硬件确定了，一般情况下您无需做进一步的修改。
+
+如果您选择了其他硬件，则[基本的集群调整指南]()可以帮助您调整配置大小。
+
 ### 开启端口(如果使用了防火墙)
+
+如果您正在使用防火墙或其他仅允许特定端口上流量准入的系统，请在以下端口上允许入站连接：
+
 #### Master服务
+
+* 1527（Derby元数据存储，如果您正在使用一个像MySQL或者PostgreSQL的分离的元数据存储则不需要）
+* 2181（Zookeeper，如果使用了独立的ZK集群则不需要）
+* 8081（Coordinator）
+* 8090（Overlord）
+
 #### Data服务
+
+* 8083（Historical）
+* 8091，8100-8199（Druid MiddleManager，如果`druid.worker.capacity`参数设置较大的话，则需要更多高于8199的端口）
+
 #### Query服务
+
+* 8082（Broker）
+* 8088（Router，如果使用了）
+
+> [!WARNING]
+> 在生产中，我们建议将ZooKeeper和元数据存储部署在其专用硬件上，而不是在Master服务器上。
+
 ### 启动Master服务
+
+将Druid发行版和您编辑的配置文件复制到Master服务器上。
+
+如果您一直在本地计算机上编辑配置，则可以使用rsync复制它们：
+
+```
+rsync -az apache-druid-0.17.0/ MASTER_SERVER:apache-druid-0.17.0/
+```
+
 #### 不带Zookeeper启动
+
+在发行版根目录中，运行以下命令以启动Master服务：
+```
+bin/start-cluster-master-no-zk-server
+```
+
 #### 带Zookeeper启动
+
+如果计划在Master服务器上运行ZK，请首先更新`conf/zoo.cfg`以标识您计划如何运行ZK，然后，您可以使用以下命令与ZK一起启动Master服务进程：
+```
+bin/start-cluster-master-with-zk-server
+```
+
+> [!WARNING]
+> 在生产中，我们建议将ZooKeeper运行在其专用硬件上。
+
 ### 启动Data服务
+
+将Druid发行版和您编辑的配置文件复制到您的Data服务器。
+
+在发行版根目录中，运行以下命令以启动Data服务：
+```
+bin/start-cluster-data-server
+```
+
+您可以在需要的时候增加更多的Data服务器。
+
+> [!WARNING]
+> 对于具有复杂资源分配需求的集群，您可以将Historical和MiddleManager分开部署，并分别扩容组件。这也使您能够利用Druid的内置MiddleManager自动伸缩功能。
+
 ### 启动Query服务
+将Druid发行版和您编辑的配置文件复制到您的Query服务器。
+
+在发行版根目录中，运行以下命令以启动Query服务：
+
+```
+bin/start-cluster-query-server
+```
+
+您可以根据查询负载添加更多查询服务器。 如果增加了查询服务器的数量，请确保按照[基本集群调优指南]()中的说明调整Historical和Task上的连接池。
+
 ### 加载数据
+
+恭喜，您现在有了Druid集群！下一步是根据使用场景来了解将数据加载到Druid的推荐方法。
+
+了解有关[加载数据](../DataIngestion/index.md)的更多信息。
 
 
