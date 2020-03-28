@@ -25,8 +25,7 @@
         "atoc",
         "edit-link",
         "copy-code-button",
-        "popup",
-        "multipart"
+        "popup"
     ],
     "pluginsConfig": {
         "edit-link": {
