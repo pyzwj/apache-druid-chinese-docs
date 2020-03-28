@@ -12,7 +12,9 @@
     },
     "plugins": [
         "-sharing",
+        "-search",
         "splitter",
+        "search-pro",
         "expandable-chapters-small",
         "github-buttons@2.1.0",
         "prism",
@@ -21,7 +23,10 @@
         "pageview-count",
         "flexible-alerts",
         "atoc",
-        "edit-link"
+        "edit-link",
+        "copy-code-button",
+        "popup",
+        "multipart"
     ],
     "pluginsConfig": {
         "edit-link": {
