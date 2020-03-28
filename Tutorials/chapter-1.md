@@ -83,8 +83,132 @@ Druid的体系结构需要一个主时间列（内部存储为名为__time的列
 查看[查询教程]()以对新加载的数据运行一些示例查询。
 
 ### 使用spec加载数据（通过控制台）
+
+Druid的安装包中在 `quickstart/tutorial/wikipedia-index.json` 文件中包含了一个本地批摄入任务说明的示例。 为了方便我们在这里展示出来，该说明已经配置好读取 `quickstart/tutorial/wikiticker-2015-09-12-sampled.json.gz` 输入文件。
+
+```
+{
+  "type" : "index_parallel",
+  "spec" : {
+    "dataSchema" : {
+      "dataSource" : "wikipedia",
+      "dimensionsSpec" : {
+        "dimensions" : [
+          "channel",
+          "cityName",
+          "comment",
+          "countryIsoCode",
+          "countryName",
+          "isAnonymous",
+          "isMinor",
+          "isNew",
+          "isRobot",
+          "isUnpatrolled",
+          "metroCode",
+          "namespace",
+          "page",
+          "regionIsoCode",
+          "regionName",
+          "user",
+          { "name": "added", "type": "long" },
+          { "name": "deleted", "type": "long" },
+          { "name": "delta", "type": "long" }
+        ]
+      },
+      "timestampSpec": {
+        "column": "time",
+        "format": "iso"
+      },
+      "metricsSpec" : [],
+      "granularitySpec" : {
+        "type" : "uniform",
+        "segmentGranularity" : "day",
+        "queryGranularity" : "none",
+        "intervals" : ["2015-09-12/2015-09-13"],
+        "rollup" : false
+      }
+    },
+    "ioConfig" : {
+      "type" : "index_parallel",
+      "inputSource" : {
+        "type" : "local",
+        "baseDir" : "quickstart/tutorial/",
+        "filter" : "wikiticker-2015-09-12-sampled.json.gz"
+      },
+      "inputFormat" :  {
+        "type": "json"
+      },
+      "appendToExisting" : false
+    },
+    "tuningConfig" : {
+      "type" : "index_parallel",
+      "maxRowsPerSegment" : 5000000,
+      "maxRowsInMemory" : 25000
+    }
+  }
+}
+```
+这份说明将创建一个命名为"wikipedia"的数据源。
+
+在"Tasks"页面，点击 `Submit task` 后选择 `Raw JSON task`,
+
+![](img/tutorial-batch-submit-task-01.png)
+
+然后会在页面中弹出任务说明输入框，您可以在上面粘贴说明
+
+![](img/tutorial-batch-submit-task-02.png)
+
+提交任务说明后，您可以按照上述相同的说明等待数据加载然后查询。
+
 ### 使用spec加载数据（通过命令行）
+
+为了方便，在Druid的软件包中提供了一个批摄取的帮助脚本 `bin/post-index-task`
+
+该脚本会将数据摄取任务发布到Druid Overlord并轮询Druid，直到可以查询数据为止。
+
+在Druid根目录运行以下命令：
+
+```
+bin/post-index-task --file quickstart/tutorial/wikipedia-index.json --url http://localhost:8081
+```
+可以看到以下的输出：
+
+```
+Beginning indexing data for wikipedia
+Task started: index_wikipedia_2018-07-27T06:37:44.323Z
+Task log:     http://localhost:8081/druid/indexer/v1/task/index_wikipedia_2018-07-27T06:37:44.323Z/log
+Task status:  http://localhost:8081/druid/indexer/v1/task/index_wikipedia_2018-07-27T06:37:44.323Z/status
+Task index_wikipedia_2018-07-27T06:37:44.323Z still running...
+Task index_wikipedia_2018-07-27T06:37:44.323Z still running...
+Task finished with status: SUCCESS
+Completed indexing data for wikipedia. Now loading indexed data onto the cluster...
+wikipedia loading complete! You may now query your data
+```
+提交任务说明后，您可以按照上述相同的说明等待数据加载然后查询。
+
 ### 不使用脚本来加载数据
+
+我们简短地讨论一下如何在不使用脚本的情况下提交数据摄取任务，您将不需要运行这些命令。
+
+要提交任务，可以在一个新的终端中通过以下方式提交任务到Druid：
+
+```
+curl -X 'POST' -H 'Content-Type:application/json' -d @quickstart/tutorial/wikipedia-index.json http://localhost:8081/druid/indexer/v1/task
+```
+当任务提交成功后会打印出来任务的ID
+```
+{"task":"index_wikipedia_2018-06-09T21:30:32.802Z"}
+```
+您可以如上所述从控制台监视此任务的状态
+
 ### 查询已加载数据
+
+加载数据后，请按照[查询教程]()的操作，对新加载的数据执行一些示例查询。
+
 ### 数据清理
+
+如果您希望阅读其他任何入门教程，则需要关闭集群并通过删除druid软件包下的`var`目录的内容来重置集群状态，因为其他教程将写入相同的"wikipedia"数据源。
+
 ### 更多信息
+
+更多关于加载批数据的信息可以查看[原生批摄取文档]()
