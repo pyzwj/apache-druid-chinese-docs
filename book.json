@@ -24,8 +24,7 @@
         "flexible-alerts",
         "atoc",
         "edit-link",
-        "copy-code-button",
-        "popup"
+        "copy-code-button"
     ],
     "pluginsConfig": {
         "edit-link": {
