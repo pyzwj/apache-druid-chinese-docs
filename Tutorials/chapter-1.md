@@ -203,7 +203,7 @@ curl -X 'POST' -H 'Content-Type:application/json' -d @quickstart/tutorial/wikipe
 
 ### 查询已加载数据
 
-加载数据后，请按照[查询教程]()的操作，对新加载的数据执行一些示例查询。
+加载数据后，请按照[查询教程](./chapter-4.md)的操作，对新加载的数据执行一些示例查询。
 
 ### 数据清理
 

@@ -210,7 +210,7 @@ curl -XPOST -H'Content-Type: application/json' -d @quickstart/tutorial/wikipedia
 ### 数据查询
 数据被发送到Kafka流之后，立刻就可以被查询了。
 
-按照[查询教程]()的操作，对新加载的数据执行一些示例查询
+按照[查询教程](./chapter-4.md)的操作，对新加载的数据执行一些示例查询
 ### 清理数据
 如果您希望阅读其他任何入门教程，则需要关闭集群并通过删除druid软件包下的`var`目录的内容来重置集群状态，因为其他教程将写入相同的"wikipedia"数据源。
 ### 进一步阅读
