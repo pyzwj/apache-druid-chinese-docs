@@ -3,3 +3,7 @@
     max-height: 400px;
     overflow: auto;
 }
+
+pre[class*="language-"] {
+    max-height: 500px;
+}

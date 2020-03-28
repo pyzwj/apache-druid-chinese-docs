@@ -8,7 +8,7 @@
 
 ### 安装Docker
 
-本教程要求将Docker安装在教程计算机上。
+本教程要求将[Docker](https://docs.docker.com/install/)安装在教程计算机上。
 
 Docker安装完成后，请继续执行本教程中的后续步骤
 
