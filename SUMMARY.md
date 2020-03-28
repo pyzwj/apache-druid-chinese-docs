@@ -15,7 +15,7 @@
 * [从Kafka加载数据](Tutorials/chapter-2.md)
 * [从Hadoop加载数据](Tutorials/chapter-3.md)
 * [查询数据](Tutorials/chapter-4.md)
-* [上卷操作](Tutorials/chapter-5.md)
+* [Rollup操作](Tutorials/chapter-5.md)
 * [配置数据保留规则](Tutorials/chapter-6.md)
 * [数据更新](Tutorials/chapter-7.md)
 * [合并段文件](Tutorials/chapter-8.md)
