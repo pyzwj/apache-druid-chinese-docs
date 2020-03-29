@@ -1,1 +1,3 @@
-## 简易教程
+<!-- toc -->
+
+## Kerberized HDFS存储
