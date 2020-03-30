@@ -7,9 +7,9 @@
 本教程我们假设您已经按照[单服务器部署](../GettingStarted/chapter-3.md)中描述下载了Druid，并运行在本地机器上。
 
 ### 加载初始数据
-在本教程中，我们将使用Wikipedia编辑数据，并使用创建每小时段的索引说明
+在本教程中，我们将使用Wikipedia编辑数据，并使用创建每小时段的索引规范
 
-这份说明位于 `quickstart/tutorial/deletion-index.json`, 它将创建一个名称为 `deletion-tutorial` 的数据源
+这份规范位于 `quickstart/tutorial/deletion-index.json`, 它将创建一个名称为 `deletion-tutorial` 的数据源
 
 现在加载这份初始数据：
 ```
@@ -129,7 +129,7 @@ $ ls -l1 var/druid/segments/deletion-tutorial/
 
 现在我们已经禁用了一些段，我们可以提交一个Kill任务，它将从元数据和深层存储中删除禁用的段。
 
-在 `quickstart/tutorial/deletion-kill.json` 提供了一个Kill任务的说明，通过以下的命令将任务提交到Overlord：
+在 `quickstart/tutorial/deletion-kill.json` 提供了一个Kill任务的规范，通过以下的命令将任务提交到Overlord：
 ```
 curl -X 'POST' -H 'Content-Type:application/json' -d @quickstart/tutorial/deletion-kill.json http://localhost:8081/druid/indexer/v1/task
 ```

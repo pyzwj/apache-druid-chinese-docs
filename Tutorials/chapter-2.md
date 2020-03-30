@@ -94,13 +94,13 @@ Druid的体系结构需要一个主时间列（内部存储为名为__time的列
 
 我们将该数据源命名为 `wikipedia-kafka`
 
-最后点击 `Next` 预览摄入说明：
+最后点击 `Next` 预览摄入规范：
 
 ![](img-2/tutorial-kafka-data-loader-09.png)
 
-这就是您构建的说明，为了查看更改将如何更新说明是可以随意返回之前的步骤中进行更改，同样，您也可以直接编辑说明，并在前面的步骤中看到它。
+这就是您构建的规范，为了查看更改将如何更新规范是可以随意返回之前的步骤中进行更改，同样，您也可以直接编辑规范，并在前面的步骤中看到它。
 
-对摄取说明感到满意后，请单击 `Submit`，然后将创建一个数据摄取任务
+对摄取规范感到满意后，请单击 `Submit`，然后将创建一个数据摄取任务
 
 ![](img-2/tutorial-kafka-data-loader-10.png)
 
@@ -129,7 +129,7 @@ Druid的体系结构需要一个主时间列（内部存储为名为__time的列
 
 ![](img-2/tutorial-kafka-submit-supervisor-01.png)
 
-粘贴以下说明后点击 `Submit`
+粘贴以下规范后点击 `Submit`
 
 ```
 {
@@ -196,7 +196,7 @@ Druid的体系结构需要一个主时间列（内部存储为名为__time的列
 
 #### 直接提交supervisor
 
-为了直接启动服务，我们可以在Druid的根目录下运行以下命令来提交一个supervisor说明到Druid Overlord中
+为了直接启动服务，我们可以在Druid的根目录下运行以下命令来提交一个supervisor规范到Druid Overlord中
 
 ```
 curl -XPOST -H'Content-Type: application/json' -d @quickstart/tutorial/wikipedia-kafka-supervisor.json http://localhost:8081/druid/indexer/v1/supervisor

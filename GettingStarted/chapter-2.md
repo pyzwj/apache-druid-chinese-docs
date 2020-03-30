@@ -134,7 +134,7 @@ $ ./bin/start-micro-quickstart
 * [加载本地文件](../Tutorials/chapter-1.md) - 本教程演示了如何使用Druid的本地批处理摄取来执行批文件加载
 * [从Kafka加载流数据](../Tutorials/chapter-2.md) - 本教程演示了如何从Kafka主题加载流数据
 * [从Hadoop加载数据](../Tutorials/chapter-3.md) - 本教程演示了如何使用远程Hadoop集群执行批处理文件加载
-* [编写一个自己的数据摄取说明](../Tutorials/chapter-10.md) - 本教程演示了如何编写新的数据摄取说明并使用它来加载数据
+* [编写一个自己的数据摄取规范](../Tutorials/chapter-10.md) - 本教程演示了如何编写新的数据摄取规范并使用它来加载数据
 
 ##### 重置集群状态
 

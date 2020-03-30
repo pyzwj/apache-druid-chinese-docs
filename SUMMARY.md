@@ -20,7 +20,7 @@
 * [数据更新](Tutorials/chapter-7.md)
 * [合并段文件](Tutorials/chapter-8.md)
 * [删除数据](Tutorials/chapter-9.md)
-* [摄入配置说明](Tutorials/chapter-10.md)
+* [摄入配置规范](Tutorials/chapter-10.md)
 * [转换输入数据](Tutorials/chapter-11.md)
 * [Kerberized HDFS存储](Tutorials/chapter-12.md)
 

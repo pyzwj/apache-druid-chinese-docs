@@ -27,7 +27,7 @@ Apache Druid可以通过roll-up在数据摄取阶段对原始数据进行汇总�
 ```
 位于 `quickstart/tutorial/rollup-data.json` 的文件包含了样例输入数据
 
-我们将使用 `quickstart/tutorial/rollup-index.json` 的摄入数据说明来摄取数据
+我们将使用 `quickstart/tutorial/rollup-index.json` 的摄入数据规范来摄取数据
 
 ```
 {
@@ -137,7 +137,7 @@ dsql>
 
 这输入的数据行已经被按照时间列和维度列 `{timestamp, srcIP, dstIP}` 在指标列 `{packages, bytes}` 上做求和聚合
 
-在进行分组之前，原始输入数据的时间戳按分钟进行标记/布局，这是由于摄取说明中的 `"queryGranularity"："minute"` 设置造成的。
+在进行分组之前，原始输入数据的时间戳按分钟进行标记/布局，这是由于摄取规范中的 `"queryGranularity"："minute"` 设置造成的。
 同样，`2018-01-01T01:02` 期间发生的这两起事件也已经汇总。
 
 ```

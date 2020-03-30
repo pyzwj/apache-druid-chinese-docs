@@ -12,16 +12,16 @@
 
 ### 加载初始数据
 
-在本教程中，我们将使用wikipedia编辑的示例数据，其中的摄取任务说明将在输入数据中每小时创建1-3个段。
+在本教程中，我们将使用wikipedia编辑的示例数据，其中的摄取任务规范将在输入数据中每小时创建1-3个段。
 
-数据摄取说明位于 `quickstart/tutorial/compaction-init-index.json` ,提交这个任务说明将创建一个名称为 `compaction-tutorial` 的数据源：
+数据摄取规范位于 `quickstart/tutorial/compaction-init-index.json` ,提交这个任务规范将创建一个名称为 `compaction-tutorial` 的数据源：
 
 ```
 bin/post-index-task --file quickstart/tutorial/compaction-init-index.json --url http://localhost:8081
 ```
 
 > ![WARNING] 
-> 请注意，摄取说明中的 `maxRowsPerSegment` 设置为1000, 这是为了每小时生成多个段，不建议在生产中使用。默认为5000000，可能需要进行调整以优化您的段文件。
+> 请注意，摄取规范中的 `maxRowsPerSegment` 设置为1000, 这是为了每小时生成多个段，不建议在生产中使用。默认为5000000，可能需要进行调整以优化您的段文件。
 
 摄取任务完成后，可以到 [http://localhost:8888/unified-console.html#datasources](http://localhost:8888/unified-console.html#datasources) Druid控制台查看新的数据源。
 
@@ -49,7 +49,7 @@ Retrieved 1 row in 1.38s.
 
 现在我们将合并这51个小的段
 
-在 `quickstart/tutorial/compaction-keep-granularity.json` 文件中我们包含了一个本教程数据源的合并任务说明。
+在 `quickstart/tutorial/compaction-keep-granularity.json` 文件中我们包含了一个本教程数据源的合并任务规范。
 
 ```
 {
@@ -106,7 +106,7 @@ Coordinator运行至少15分钟后，"Segments"视图应显示有24个分段，�
 
 合并任务还可以生成不同于输入段粒度的合并段
 
-我们在 `quickstart/tutorial/compaction-day-granularity.json` 文件中包含了一个可以创建 `DAY` 粒度的合并任务摄取说明：
+我们在 `quickstart/tutorial/compaction-day-granularity.json` 文件中包含了一个可以创建 `DAY` 粒度的合并任务摄取规范：
 
 ```
 {
@@ -123,7 +123,7 @@ Coordinator运行至少15分钟后，"Segments"视图应显示有24个分段，�
 }
 ```
 
-请注意这个合并任务说明中 `segmentGranularity` 配置项设置为了 `DAY`
+请注意这个合并任务规范中 `segmentGranularity` 配置项设置为了 `DAY`
 
 现在提交这个任务：
 ```

@@ -10,9 +10,9 @@
 
 ### 加载示例数据
 
-在本教程中，我们将使用Wikipedia编辑的示例数据，其中包含一个摄取任务说明，它将为输入数据每个小时创建一个单独的段
+在本教程中，我们将使用Wikipedia编辑的示例数据，其中包含一个摄取任务规范，它将为输入数据每个小时创建一个单独的段
 
-数据摄取说明位于 `quickstart/tutorial/retention-index.json`, 提交这个说明，将创建一个名称为 `retention-tutorial` 的数据源
+数据摄取规范位于 `quickstart/tutorial/retention-index.json`, 提交这个规范，将创建一个名称为 `retention-tutorial` 的数据源
 
 ```
 bin/post-index-task --file quickstart/tutorial/retention-index.json --url http://localhost:8081

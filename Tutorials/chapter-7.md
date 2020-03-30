@@ -12,7 +12,7 @@
 
 #### 加载初始数据
 
-本节教程使用的任务摄取说明位于 `quickstart/tutorial/updates-init-index.json`, 本说明从 `quickstart/tutorial/updates-data.json` 输入文件创建一个名称为 `updates-tutorial` 的数据源
+本节教程使用的任务摄取规范位于 `quickstart/tutorial/updates-init-index.json`, 本规范从 `quickstart/tutorial/updates-data.json` 输入文件创建一个名称为 `updates-tutorial` 的数据源
 
 提交任务：
 ```
@@ -35,7 +35,7 @@ Retrieved 3 rows in 1.42s.
 
 为了覆盖这些数据，我们可以在相同的时间间隔内提交另一个任务，但是使用不同的输入数据。
 
-`quickstart/tutorial/updates-overwrite-index.json` 说明将会对 `updates-tutorial` 数据进行数据重写
+`quickstart/tutorial/updates-overwrite-index.json` 规范将会对 `updates-tutorial` 数据进行数据重写
 
 注意，此任务从 `quickstart/tutorial/updates-data2.json` 读取输入，`appendToExisting` 设置为false（表示这是一个覆盖）
 
@@ -62,7 +62,7 @@ Retrieved 3 rows in 0.02s.
 
 现在我们尝试在 `updates-tutorial` 数据源追加一些新的数据，我们将从 `quickstart/tutorial/updates-data3.json` 增加新的数据
 
-`quickstart/tutorial/updates-append-index.json` 任务说明配置为从现有的 `updates-tutorial` 数据源和 `quickstart/tutorial/updates-data3.json` 文件读取数据，该任务将组合来自两个输入源的数据，然后用新的组合数据覆盖原始数据。
+`quickstart/tutorial/updates-append-index.json` 任务规范配置为从现有的 `updates-tutorial` 数据源和 `quickstart/tutorial/updates-data3.json` 文件读取数据，该任务将组合来自两个输入源的数据，然后用新的组合数据覆盖原始数据。
 
 提交任务：
 ```
@@ -89,7 +89,7 @@ Retrieved 6 rows in 0.02s.
 
 现在尝试另一种追加数据的方式
 
-`quickstart/tutorial/updates-append-index2.json` 任务说明从 `quickstart/tutorial/updates-data4.json` 文件读取数据，然后追加到 `updates-tutorial` 数据源。注意到在说明中 `appendToExisting` 设置为 `true`
+`quickstart/tutorial/updates-append-index2.json` 任务规范从 `quickstart/tutorial/updates-data4.json` 文件读取数据，然后追加到 `updates-tutorial` 数据源。注意到在规范中 `appendToExisting` 设置为 `true`
 
 提交任务：
 ```

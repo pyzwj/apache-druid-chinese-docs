@@ -4,11 +4,11 @@
 
 本教程演示了如何使用Apache Druid的本地批量数据摄取来执行批文件加载。
 
-在本教程中，我们假设您已经按照[快速入门](../GettingStarted/chapter-1.md)中的说明下载了Druid，并使用`micro-quickstart`单机配置使其在本地计算机上运行。您不需要加载任何数据。
+在本教程中，我们假设您已经按照[快速入门](../GettingStarted/chapter-1.md)中的规范下载了Druid，并使用`micro-quickstart`单机配置使其在本地计算机上运行。您不需要加载任何数据。
 
-Druid的数据加载是通过向Overlord服务提交*摄取任务说明*来启动。对于本教程，我们将加载Wikipedia页面示例编辑数据。
+Druid的数据加载是通过向Overlord服务提交*摄取任务规范*来启动。对于本教程，我们将加载Wikipedia页面示例编辑数据。
 
-*数据摄取任务说明*可以手动编写，也可以通过Druid控制台里内置的数据加载器编写。数据加载器可以通过采样摄入的数据并配置各种摄入参数来帮助您生成*摄取任务说明*。数据加载器当前仅支持本地批处理提取（将来的版本中将提供对流的支持，包括存储在Apache Kafka和AWS Kinesis中的数据）。目前只能通过手动书写摄入规范来进行流式摄入。
+*数据摄取任务规范*可以手动编写，也可以通过Druid控制台里内置的数据加载器编写。数据加载器可以通过采样摄入的数据并配置各种摄入参数来帮助您生成*摄取任务规范*。数据加载器当前仅支持本地批处理提取（将来的版本中将提供对流的支持，包括存储在Apache Kafka和AWS Kinesis中的数据）。目前只能通过手动书写摄入规范来进行流式摄入。
 
 我们提供了2015年9月12日起对Wikipedia进行编辑的示例，以帮助您入门。
 
@@ -54,13 +54,13 @@ Druid的体系结构需要一个主时间列（内部存储为名为__time的列
 
 ![](img-1/tutorial-batch-data-loader-07.png)
 
-在 `Publish` 步骤中，我们可以指定Druid中的数据源名称,让我们将此数据源命名为 `Wikipedia`。最后，单击 `Next` 来查看您的摄取说明。
+在 `Publish` 步骤中，我们可以指定Druid中的数据源名称,让我们将此数据源命名为 `Wikipedia`。最后，单击 `Next` 来查看您的摄取规范。
 
 ![](img-1/tutorial-batch-data-loader-08.png)
 
-这就是您构建的说明，为了查看更改将如何更新说明是可以随意返回之前的步骤中进行更改，同样，您也可以直接编辑说明，并在前面的步骤中看到它。
+这就是您构建的规范，为了查看更改将如何更新规范是可以随意返回之前的步骤中进行更改，同样，您也可以直接编辑规范，并在前面的步骤中看到它。
 
-对摄取说明感到满意后，请单击 `Submit`，然后将创建一个数据摄取任务。
+对摄取规范感到满意后，请单击 `Submit`，然后将创建一个数据摄取任务。
 
 ![](img-1/tutorial-batch-data-loader-09.png)
 
@@ -84,7 +84,7 @@ Druid的体系结构需要一个主时间列（内部存储为名为__time的列
 
 ### 使用spec加载数据（通过控制台）
 
-Druid的安装包中在 `quickstart/tutorial/wikipedia-index.json` 文件中包含了一个本地批摄入任务说明的示例。 为了方便我们在这里展示出来，该说明已经配置好读取 `quickstart/tutorial/wikiticker-2015-09-12-sampled.json.gz` 输入文件。
+Druid的安装包中在 `quickstart/tutorial/wikipedia-index.json` 文件中包含了一个本地批摄入任务规范的示例。 为了方便我们在这里展示出来，该规范已经配置好读取 `quickstart/tutorial/wikiticker-2015-09-12-sampled.json.gz` 输入文件。
 
 ```
 {
@@ -148,17 +148,17 @@ Druid的安装包中在 `quickstart/tutorial/wikipedia-index.json` 文件中包�
   }
 }
 ```
-这份说明将创建一个命名为"wikipedia"的数据源。
+这份规范将创建一个命名为"wikipedia"的数据源。
 
 在"Tasks"页面，点击 `Submit task` 后选择 `Raw JSON task`,
 
 ![](img-1/tutorial-batch-submit-task-01.png)
 
-然后会在页面中弹出任务说明输入框，您可以在上面粘贴说明
+然后会在页面中弹出任务规范输入框，您可以在上面粘贴规范
 
 ![](img-1/tutorial-batch-submit-task-02.png)
 
-提交任务说明后，您可以按照上述相同的说明等待数据加载然后查询。
+提交任务规范后，您可以按照上述相同的规范等待数据加载然后查询。
 
 ### 使用spec加载数据（通过命令行）
 
@@ -184,7 +184,7 @@ Task finished with status: SUCCESS
 Completed indexing data for wikipedia. Now loading indexed data onto the cluster...
 wikipedia loading complete! You may now query your data
 ```
-提交任务说明后，您可以按照上述相同的说明等待数据加载然后查询。
+提交任务规范后，您可以按照上述相同的规范等待数据加载然后查询。
 
 ### 不使用脚本来加载数据
 
