@@ -26,7 +26,12 @@
 
 ### 架构设计
 
-* [架构设计](Design/index.md)
+* [整体设计](Design/Design.md)
+* [段设计](Design/Segments.md)
+* [进程与服务](Design/Processes.md)
+* [深度存储](Design/Deepstorage.md)
+* [元数据存储](Design/Metadata.md)
+* [Zookeeper](Design/Zookeeper.md)
 
 ### 数据摄取
 
