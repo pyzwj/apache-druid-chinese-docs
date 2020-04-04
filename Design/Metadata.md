@@ -6,7 +6,7 @@
 
 Derby是Druid的默认元数据存储，但是它不适合生产环境。[MySQL]()和[PostgreSQL]()是更适合生产的元数据存储。
 
-> ![WARNING]
+> [!WARNING]
 > 元数据存储存储了Druid集群工作所必需的整个元数据。对于生产集群，考虑使用MySQL或PostgreSQL而不是Derby。此外，强烈建议设置数据库的高可用，因为如果丢失任何元数据，将无法恢复。
 
 ### 使用Derby
