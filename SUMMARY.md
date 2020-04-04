@@ -2,7 +2,7 @@
 
 * [Druid概述](README.md)
 
-* [新手入门]()
+* [新手入门](GettingStarted/chapter-1.md)
   * [Druid介绍](GettingStarted/chapter-1.md)
   * [快速开始](GettingStarted/chapter-2.md)
   * [单服务器部署](GettingStarted/chapter-3.md)
