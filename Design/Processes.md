@@ -4,13 +4,13 @@
 ### 进程类型
 
 Druid有以下几种进程类型：
-* [Coordinator](Coordinator.md)
-* [Overlord](Overlord.md)
-* [Broker](Broker.md)
-* [Historical](Historical.md)
-* [MiddleManager](MiddleManager.md) 和 [Peons](Peons.md)
-* [Indexer(可选)](Indexer.md)
-* [Router(可选)](Router.md)
+* [Coordinator](./Coordinator.md)
+* [Overlord](./Overlord.md)
+* [Broker](./Broker.md)
+* [Historical](./Historical.md)
+* [MiddleManager](./MiddleManager.md) 和 [Peons](./Peons.md)
+* [Indexer(可选)](./Indexer.md)
+* [Router(可选)](./Router.md)
 
 ### 服务类型
 
@@ -31,11 +31,11 @@ Master服务管理数据的摄取和可用性：它负责启动新的摄取作�
 
 **Coordinator进程**
 
-[Coordinator](Coordinator.md) 监视Data服务中的Historical进程，它们负责将数据段分配给特定的服务器，并确保数据段在各个Historical之间保持良好的平衡。
+[Coordinator](./Coordinator.md) 监视Data服务中的Historical进程，它们负责将数据段分配给特定的服务器，并确保数据段在各个Historical之间保持良好的平衡。
 
 **Overlord进程**
 
-[Overlord](Overlord.md) 监视Data服务中的MiddleManager进程，并且是Druid数据接收的控制器。它们负责将接收任务分配给MiddleManager，并协调数据段的发布。
+[Overlord](./Overlord.md) 监视Data服务中的MiddleManager进程，并且是Druid数据接收的控制器。它们负责将接收任务分配给MiddleManager，并协调数据段的发布。
 
 #### Query服务
 
@@ -45,7 +45,7 @@ Query服务提供用户和客户端应用程序交互，将查询路由到Data�
 
 **Broker进程**
 
-[Broker](Broker.md)从外部客户端接收查询并将这些查询转发到Data服务器, 当Broker接收到子查询的结果时，它们会合并这些结果并将其返回给调用者。用户通常查询Broker，而不是直接查询Data服务中的Historical或MiddleManager进程。
+[Broker](./Broker.md)从外部客户端接收查询并将这些查询转发到Data服务器, 当Broker接收到子查询的结果时，它们会合并这些结果并将其返回给调用者。用户通常查询Broker，而不是直接查询Data服务中的Historical或MiddleManager进程。
 
 **Router进程（可选）**
 
@@ -61,19 +61,19 @@ Data服务执行摄取作业并存储可查询数据。
 
 #### Historical进程
 
-[Historical](Historical.md) 进程是处理存储和查询"Historical"数据（包括系统中已提交足够长时间的任何流数据）的工作程序。Historical进程从深层存储下载段并响应有关这些段的查询，他们不接受写操作。
+[Historical](./Historical.md) 进程是处理存储和查询"Historical"数据（包括系统中已提交足够长时间的任何流数据）的工作程序。Historical进程从深层存储下载段并响应有关这些段的查询，他们不接受写操作。
 
 #### MiddleManager进程
 
-[MiddleManager](MiddleManager.md) 进程处理将新数据摄取到集群中的操作, 他们负责读取外部数据源并发布新的Druid段。
+[MiddleManager](./MiddleManager.md) 进程处理将新数据摄取到集群中的操作, 他们负责读取外部数据源并发布新的Druid段。
 
 **Peon进程**
 
-[Peon](Peons.md) 进程是由MiddleManagers生成的任务执行引擎。每个Peon运行一个单独的JVM，负责执行一个任务。Peon总是和孕育它们的MiddleManager在同一个主机上运行。
+[Peon](./Peons.md) 进程是由MiddleManagers生成的任务执行引擎。每个Peon运行一个单独的JVM，负责执行一个任务。Peon总是和孕育它们的MiddleManager在同一个主机上运行。
 
 #### Indexer进程（可选）
 
-[Indexer](Indexer.md) 进程是MiddleManager和Peon的替代方法。Indexer在单个JVM进程中作为单个线程运行任务，而不是为每个任务派生单独的JVM进程。
+[Indexer](./Indexer.md) 进程是MiddleManager和Peon的替代方法。Indexer在单个JVM进程中作为单个线程运行任务，而不是为每个任务派生单独的JVM进程。
 
 与MiddleManager + Peon系统相比，Indexer的设计更易于配置和部署，并且能够更好地实现跨任务的资源共享。Indexer是一种较新的功能，由于其内存管理系统仍在开发中，因此目前被指定为[实验性的特性]()。它将在Druid的未来版本中继续成熟。
 
