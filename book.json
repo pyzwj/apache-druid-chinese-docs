@@ -24,7 +24,8 @@
         "flexible-alerts",
         "atoc",
         "edit-link",
-        "copy-code-button"
+        "copy-code-button",
+        "tbfed-pagefooter"
     ],
     "pluginsConfig": {
         "edit-link": {
@@ -41,6 +42,11 @@
         "atoc": {
             "addClass": true,
             "className": "atoc"
+        },
+        "tbfed-pagefooter": {
+            "copyright": "Copyright © 2020 apache-druid.cn All Rights Reserved | <a href='http://www.beian.miit.gov.cn/'>渝ICP备16001958号</a>",
+            "modify_label": "最近一次修改时间：",
+            "modify_format": "YYYY-MM-DD HH:mm:ss"
         }
     }
 }
