@@ -17,7 +17,7 @@ Apache Druid不提供的存储机制，深度存储是存储段的地方。深�
 
 注意，通常应该将 `druid.storage.storageDirectory` 设置为与 `druid.segmentCache.locations` 和 `druid.segmentCache.infoDir` 不同的目录。
 
-如果在本地模式下使用Hadoop Indexer，那么只需给它一个本地文件作为输出目录，它就可以工作了。
+如果在本地模式下使用Hadoop Indexer，那么只需给它一个本地目录作为输出目录，它就可以工作了。
 
 ### S3适配
 
