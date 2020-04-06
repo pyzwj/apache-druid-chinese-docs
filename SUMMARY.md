@@ -31,6 +31,7 @@
     * [Historical](Design/Historical.md)
     * [MiddleManager](Design/MiddleManager.md)
     * [Broker](Design/Broker.md)
+    * [Router](Design/Router.md)
     * [Indexer](Design/Indexer.md)
     * [Peon](Design/Peons.md)
   * [深度存储](Design/Deepstorage.md)
