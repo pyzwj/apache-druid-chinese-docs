@@ -38,9 +38,20 @@
   * [元数据存储](Design/Metadata.md)
   * [Zookeeper](Design/Zookeeper.md)
 
-### 数据摄取
-
-* [数据摄取](DataIngestion/index.md)
+* [数据摄取](DataIngestion/ingestion.md)
+  * [摄取概述](DataIngestion/ingestion.md)
+  * [数据格式](DataIngestion/dataformats.md)
+  * [schema设计](DataIngestion/schemadesign.md)
+  * [数据管理](DataIngestion/datamanage.md)
+  * [流式摄取](DataIngestion/kafka.md)
+    * [Apache Kafka](DataIngestion/kafka.md)
+    * [Apache Kinesis](DataIngestion/kinesis.md)
+    * [Tranquility](DataIngestion/tranquility.md)
+  * [批量摄取](DataIngestion/native.md)
+    * [本地批](DataIngestion/native.md)
+    * [Hadoop批](DataIngestion/hadoopbased.md)
+  * [任务参考](DataIngestion/taskrefer.md)
+  * [问题FAQ](DataIngestion/faq.md)
 
 ### 数据查询
 
