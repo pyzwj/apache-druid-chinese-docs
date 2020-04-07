@@ -12,6 +12,6 @@ pre[class*="language-"] {
     display: block;
 }
 
-.atoc li a{
+.atoc li a:first{
     visibility: hidden;
 }
