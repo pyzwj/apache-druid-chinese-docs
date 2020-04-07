@@ -7,3 +7,11 @@
 pre[class*="language-"] {
     max-height: 500px;
 }
+
+.markdown-section table{
+    display: block;
+}
+
+.atoc li a{
+    visibility: hidden;
+}
