@@ -51,7 +51,7 @@ Query服务提供用户和客户端应用程序交互，将查询路由到Data�
 
 Router进程是*可选*的进程，相当于是为Druid Broker、Overlord和Coordinator提供一个统一的API网关。Router是可选的，因为也可以直接与Druid的Broker、Overlord和Coordinator。
 
-Router还运行着[Druid控制台]()，一个用于数据源、段、任务、数据进程（Historical和MiddleManager）和Coordinator动态配置的管理UI。用户还可以在控制台中运行SQL和本地Druid查询。
+Router还运行着[Druid控制台](../Operations/manageui.md)，一个用于数据源、段、任务、数据进程（Historical和MiddleManager）和Coordinator动态配置的管理UI。用户还可以在控制台中运行SQL和本地Druid查询。
 
 #### Data服务
 
@@ -75,7 +75,7 @@ Data服务执行摄取作业并存储可查询数据。
 
 [Indexer](./Indexer.md) 进程是MiddleManager和Peon的替代方法。Indexer在单个JVM进程中作为单个线程运行任务，而不是为每个任务派生单独的JVM进程。
 
-与MiddleManager + Peon系统相比，Indexer的设计更易于配置和部署，并且能够更好地实现跨任务的资源共享。Indexer是一种较新的功能，由于其内存管理系统仍在开发中，因此目前被指定为[实验性的特性]()。它将在Druid的未来版本中继续成熟。
+与MiddleManager + Peon系统相比，Indexer的设计更易于配置和部署，并且能够更好地实现跨任务的资源共享。Indexer是一种较新的功能，由于其内存管理系统仍在开发中，因此目前被指定为[实验性的特性](../Development/experimental.md)。它将在Druid的未来版本中继续成熟。
 
 通常，您可以部署MiddleManagers或indexer，但不能同时部署两者。
 
@@ -97,7 +97,7 @@ Coordinator进程的工作负载往往随着集群中段的数量而增加。Ove
 
 通过设置 `druid.Coordinator.asOverlord.enabled` 属性，Coordinator进程和Overlord进程可以作为单个组合进程运行。
 
-有关详细信息，请参阅[Coordinator配置]()。
+有关详细信息，请参阅[Coordinator配置](../Configuration/configuration.md#Coordinator)。
 
 #### Historical和MiddleManager
 

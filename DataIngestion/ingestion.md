@@ -52,14 +52,49 @@ Druid中的所有数据都被组织成*段*，这些段是数据文件，通常�
 
 ### Druid数据模型
 #### 数据源
+Druid数据存储在数据源中，与传统RDBMS中的表类似。Druid提供了一个独特的数据建模系统，它与关系模型和时间序列模型都具有相似性。
 #### 主时间戳列
+Druid Schema必须始终包含一个主时间戳。主时间戳用于对 [数据进行分区和排序](#分区)。Druid查询能够快速识别和检索与主时间戳列的时间范围相对应的数据。Druid还可以将主时间戳列用于基于时间的[数据管理操作](datamanage.md)，例如删除时间块、覆盖时间块和基于时间的保留规则。
+
+主时间戳基于 [`timestampSpec`](#timestampSpec) 进行解析。此外，[`granularitySpec`](#granularitySpec) 控制基于主时间戳的其他重要操作。无论从哪个输入字段读取主时间戳，它都将作为名为 `__time` 的列存储在Druid数据源中。
+
+如果有多个时间戳列，则可以将其他列存储为 [辅助时间戳](schemadesign.md#辅助时间戳)。
+
 #### 维度
+维度是按原样存储的列，可以用于任何目的, 可以在查询时以特殊方式对维度进行分组、筛选或应用聚合器。如果在禁用了 [rollup](#Rollup) 的情况下运行，那么该维度集将被简单地视为要摄取的一组列，并且其行为与不支持rollup功能的典型数据库的预期完全相同。
+
+通过 [`dimensionSpec`](#dimensionSpec) 配置维度。
+
 #### 指标
+Metrics是以聚合形式存储的列。启用 [rollup](#Rollup) 时，它们最有用。指定一个Metric允许您为Druid选择一个聚合函数，以便在摄取期间应用于每一行。这有两个好处：
+
+1. 如果启用了 [rollup](#Rollup)，即使保留摘要信息，也可以将多行折叠为一行。在 [Rollup教程](../Tutorials/chapter-5.md) 中，这用于将netflow数据折叠为每（`minute`，`srcIP`，`dstIP`）元组一行，同时保留有关总数据包和字节计数的聚合信息。
+2. 一些聚合器，特别是近似聚合器，即使在非汇总数据上，如果在接收时部分计算，也可以在查询时更快地计算它们。
+
+Metrics是通过 [`metricsSpec`](#metricsSpec) 配置的。
+
 ### Rollup
 #### 什么是rollup
+Druid可以在接收过程中将数据进行汇总，以最小化需要存储的原始数据量。Rollup是一种汇总或预聚合的形式。实际上，Rollup可以极大地减少需要存储的数据的大小，从而潜在地减少行数的数量级。这种存储量的减少是有代价的：当我们汇总数据时，我们就失去了查询单个事件的能力。
+
+禁用rollup时，Druid将按原样加载每一行，而不进行任何形式的预聚合。此模式类似于您对不支持汇总功能的典型数据库的期望。
+
+如果启用了rollup，那么任何具有相同[维度](#维度)和[时间戳](#主时间戳列)的行（在基于 `queryGranularity` 的截断之后）都可以在Druid中折叠或汇总为一行。
+
+rollup默认是启用状态。
+
 #### 启用或者禁用rollup
+
+Rollup由 `granularitySpec` 中的 `rollup` 配置项控制。 默认情况下，值为 `true`(启用状态)。如果你想让Druid按原样存储每条记录，而不需要任何汇总，将该值设置为 `false`。
+
 #### rollup示例
+有关如何配置Rollup以及该特性将如何修改数据的示例，请参阅[Rollup教程](../Tutorials/chapter-5.md)。
+
 #### 最大化rollup比率
+通过比较Druid中的行数和接收的事件数，可以测量数据源的汇总率。这个数字越高，从汇总中获得的好处就越多。一种方法是使用[Druid SQL](../Querying/druidsql.md)查询，比如：
+```
+SELECT SUM("cnt") / COUNT(*) * 1.0 FROM datasource
+```
 #### 最佳rollup VS 尽可能rollup
 ### 分区
 #### 为什么分区

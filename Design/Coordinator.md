@@ -1,10 +1,10 @@
 <!-- toc -->
 ## Coordinator进程
 ### 配置
-对于Apache Druid的Coordinator进程配置，详见 [Coordinator配置]()
+对于Apache Druid的Coordinator进程配置，详见 [Coordinator配置](../Configuration/configuration.md#Coordinator)
 
 ### HTTP
-对于Coordinator的API接口，详见 [Coordinator API]()
+对于Coordinator的API接口，详见 [Coordinator API](../Operations/api.md#Coordinator)
 
 ### 综述
 Druid Coordinator程序主要负责段管理和分发。更具体地说，Druid Coordinator进程与Historical进程通信，根据配置加载或删除段。Druid Coordinator负责加载新段、删除过时段、管理段复制和平衡段负载。
@@ -18,7 +18,7 @@ Druid Coordinator定期运行，每次运行之间的时间是一个可配置的
 org.apache.druid.cli.Main server coordinator
 ```
 ### 规则
-可以根据一组规则自动从集群中加载和删除段。有关规则的详细信息，请参阅[规则配置]()。
+可以根据一组规则自动从集群中加载和删除段。有关规则的详细信息，请参阅[规则配置](../Operations/retainingOrDropData.md)。
 
 ### 清理段
 每次运行时，Druid Coordinator都会将数据库中可用段的列表与集群中的当前段进行比较,不在数据库中但仍在集群中服务的段将被标记并附加到删除列表中,被遮蔽的段（它们的版本太旧，它们的数据被更新的段替换）也会被丢弃。
@@ -31,14 +31,14 @@ org.apache.druid.cli.Main server coordinator
 
 ### 合并段
 
-每次运行时，Druid Coordinator都通过合并小段或拆分大片段来压缩段。当您的段没有进行段大小（可能会导致查询性能下降）优化时，该操作非常有用。有关详细信息，请参见[段大小优化]()。
+每次运行时，Druid Coordinator都通过合并小段或拆分大片段来压缩段。当您的段没有进行段大小（可能会导致查询性能下降）优化时，该操作非常有用。有关详细信息，请参见[段大小优化](../Operations/segmentSizeOpt.md)。
 
-Coordinator首先根据[段搜索策略](#段搜索策略)查找要压缩的段。找到某些段后，它会发出[压缩任务]()来压缩这些段。运行压缩任务的最大数目为 `min(sum of worker capacity * slotRatio, maxSlots)`。请注意，即使 `min(sum of worker capacity * slotRatio, maxSlots)` = 0，如果为数据源启用了压缩，则始终会提交至少一个压缩任务。请参阅[压缩配置API]()和[压缩配置]()以启用压缩。
+Coordinator首先根据[段搜索策略](#段搜索策略)查找要压缩的段。找到某些段后，它会发出[压缩任务](../DataIngestion/taskrefer.md#compact)来压缩这些段。运行压缩任务的最大数目为 `min(sum of worker capacity * slotRatio, maxSlots)`。请注意，即使 `min(sum of worker capacity * slotRatio, maxSlots)` = 0，如果为数据源启用了压缩，则始终会提交至少一个压缩任务。请参阅[压缩配置API](../Operations/api.md#Coordinator)和[压缩配置](../Configuration/configuration.md#Coordinator)以启用压缩。
 
 压缩任务可能由于以下原因而失败:
 
 * 如果压缩任务的输入段在开始前被删除或覆盖，则该压缩任务将立即失败。
-* 如果优先级较高的任务获取与压缩任务的时间间隔重叠的[时间块锁]()，则压缩任务失败。
+* 如果优先级较高的任务获取与压缩任务的时间间隔重叠的[时间块锁](../DataIngestion/taskrefer.md#锁)，则压缩任务失败。
 
 一旦压缩任务失败，Coordinator只需再次检查失败任务间隔中的段，并在下次运行中发出另一个压缩任务。
 
@@ -64,14 +64,14 @@ Coordinator首先根据[段搜索策略](#段搜索策略)查找要压缩的段�
 
 如果Coordinator还有足够的用于压缩任务的插槽，该策略则继续搜索剩下的段并返回 `bar_2017-10-01T00:00:00.000Z_2017-11-01T00:00:00.000Z_VERSION` 和 `bar_2017-10-01T00:00:00.000Z_2017-11-01T00:00:00.000Z_VERSION_1`。最后，因为在 `2017-09-01T00:00:00.000Z/2017-10-01T00:00:00.000Z` 时间间隔中只有一个段，所以 `foo_2017-09-01T00:00:00.000Z_2017-10-01T00:00:00.000Z_VERSION` 段也会被选择。
 
-搜索的起点可以通过 [skipOffsetFromLatest]() 来更改设置。如果设置了此选项，则此策略将忽略范围内的时间段（最新段的结束时间 - `skipOffsetFromLatest`）， 该配置项主要是为了避免压缩任务和实时任务之间的冲突。请注意，默认情况下，实时任务的优先级高于压缩任务。如果两个任务的时间间隔重叠，实时任务将撤消压缩任务的锁，从而终止压缩任务。
+搜索的起点可以通过 [skipOffsetFromLatest](../Configuration/configuration.md#Coordinator) 来更改设置。如果设置了此选项，则此策略将忽略范围内的时间段（最新段的结束时间 - `skipOffsetFromLatest`）， 该配置项主要是为了避免压缩任务和实时任务之间的冲突。请注意，默认情况下，实时任务的优先级高于压缩任务。如果两个任务的时间间隔重叠，实时任务将撤消压缩任务的锁，从而终止压缩任务。
 
 > [!WARNING]
 > 当有很多相同间隔的小段，并且它们的总大小超过 `inputSegmentSizeBytes` 时，此策略当前无法处理这种情况。如果它找到这样的段，它只会跳过它们。
 
 ### Coordinator控制台
 
-Druid Coordinator公开了一个web GUI，用于显示集群信息和规则配置。有关详细信息，请参阅[Coordinator控制台]()。
+Druid Coordinator公开了一个web GUI，用于显示集群信息和规则配置。有关详细信息，请参阅[Coordinator控制台](../Operations/manageui.md)。
 
 ### FAQ
 
