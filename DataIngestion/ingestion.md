@@ -139,6 +139,7 @@ Druid数据源总是按时间划分为*时间块*，每个时间块包含一个�
 并不是所有的摄入方式都支持显式的分区配置，也不是所有的方法都具有同样的灵活性。在当前的Druid版本中，如果您是通过一个不太灵活的方法（如Kafka）进行初始摄取，那么您可以使用 [重新索引的技术(reindex)](./datamanage.md#压缩与重新索引)，在最初摄取数据后对其重新分区。这是一种强大的技术：即使您不断地从流中添加新数据, 也可以使用它来确保任何早于某个阈值的数据都得到最佳分区。
 
 下表显示了每个摄取方法如何处理分区：
+
 | **方法** | **如何工作** |
 | - | - |
 | [本地批](native.md) | 通过 `tuningConfig` 中的 [`partitionsSpec`](./native.md#partitionsSpec) |
@@ -313,6 +314,42 @@ Druid数据源总是按时间划分为*时间块*，每个时间块包含一个�
 </table>
 
 ##### `dimensionSpec`
+`dimensionsSpec` 位于 `dataSchema` -> `dimensionsSpec`, 用来配置维度。示例如下：
+```
+"dimensionsSpec" : {
+  "dimensions": [
+    "page",
+    "language",
+    { "type": "long", "name": "userId" }
+  ],
+  "dimensionExclusions" : [],
+  "spatialDimensions" : []
+}
+```
+
+> [!WARNING]
+> 概念上，输入数据被读取后，Druid会以一个特定的顺序来对数据应用摄入规范： 首先 `flattenSpec`(如果有)，然后 `timestampSpec`, 然后 `transformSpec` ,最后是 `dimensionsSpec` 和 `metricsSpec`。在编写摄入规范时需要牢记这一点
+
+`dimensionsSpec` 可以包括以下部分：
+
+| 字段 | 描述 | 默认值 |
+|-|-|-|
+| dimensions | 维度名称或者对象的列表，在 `dimensions` 和 `dimensionExclusions` 中不能包含相同的列。 <br><br> 如果该配置为一个空数组，Druid将会把所有未出现在 `dimensionExclusions` 中的非时间、非指标列当做字符串类型的维度列，参见[Inclusions and exclusions](#Inclusions-and-exclusions)。 | `[]` |
+| dimensionExclusions | 在摄取中需要排除的列名称，在该配置中只支持名称，不支持对象。在 `dimensions` 和 `dimensionExclusions` 中不能包含相同的列。 | `[]` |
+| spatialDimensions | 一个[空间维度](../Querying/spatialfilter.md)的数组 | `[]` |
+
+###### `Dimension objects`
+在 `dimensions` 列的每一个维度可以是一个名称，也可以是一个对象。 提供一个名称等价于提供了一个给定名称的 `string` 类型的维度对象。例如： `page` 等价于 `{"name": "page", "type": "string"}`。
+
+维度对象可以有以下的部分：
+
+| 字段 | 描述 | 默认值 |
+|-|-|-|
+| type | `string`, `long`, `float` 或者 `double` | `string` |
+| name | 维度名称，将用作从输入记录中读取的字段名，以及存储在生成的段中的列名。<br><br> 注意： 如果想在摄取的时候重新命名列，可以使用 [`transformSpec`](#transformspec) | none（必填）|
+| createBitmapIndex | 对于字符串类型的维度，是否应为生成的段中的列创建位图索引。创建位图索引需要更多存储空间，但会加快某些类型的筛选（特别是相等和前缀筛选）。仅支持字符串类型的维度。| `true` |
+
+###### `Inclusions and exclusions`
 ##### `metricsSpec`
 ##### `granularitySpec`
 ##### `transformSpec`
