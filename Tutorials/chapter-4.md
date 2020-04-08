@@ -273,5 +273,5 @@ curl -X 'POST' -H 'Content-Type:application/json' -d @quickstart/tutorial/wikipe
 
 ### 进一步阅读
 
-[查询文档]()有更多关于Druid原生JSON查询的信息
-[Druid SQL文档]()有更多关于Druid SQL查询的信息
+[查询文档](../Querying/makeNativeQueries.md)有更多关于Druid原生JSON查询的信息
+[Druid SQL文档](../Querying/druidsql.md)有更多关于Druid SQL查询的信息

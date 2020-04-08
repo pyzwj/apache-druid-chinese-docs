@@ -2,17 +2,17 @@
 ## Indexer
 
 > [!WARNING]
-> 索引器是一个可选的和[实验性]()的功能, 其内存管理系统仍在开发中，并将在以后的版本中得到显著增强。
+> 索引器是一个可选的和[实验性](../Development/experimental.md)的功能, 其内存管理系统仍在开发中，并将在以后的版本中得到显著增强。
 
 Apache Druid索引器进程是MiddleManager + Peon任务执行系统的另一种可替代选择。索引器在单个JVM进程中作为单独的线程运行任务，而不是为每个任务派生单独的JVM进程。
 
 与MiddleManager + Peon系统相比，Indexer的设计更易于配置和部署，并且能够更好地实现跨任务的资源共享。
 
 ### 配置
-对于Apache Druid Indexer进程的配置，请参见 [Indexer配置]()
+对于Apache Druid Indexer进程的配置，请参见 [Indexer配置](../Configuration/configuration.md#Indexer)
 
 ### HTTP
-Indexer进程与[MiddleManager]()共用API
+Indexer进程与[MiddleManager](../Operations/api.md#MiddleManager)共用API
 
 ### 运行
 ```
@@ -26,7 +26,7 @@ org.apache.druid.cli.Main server indexer
 **查询资源**
 查询处理线程和缓冲区在所有任务中共享。索引器将为来自所有任务共享的单个端点的查询提供服务。
 
-如果启用了[查询缓存]()，则查询缓存也将在所有任务中共享。
+如果启用了[查询缓存](../Configuration/configuration.md)，则查询缓存也将在所有任务中共享。
 
 **服务端HTTP线程**
 索引器维护两个大小相等的HTTP线程池。

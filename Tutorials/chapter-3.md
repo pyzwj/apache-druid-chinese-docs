@@ -212,4 +212,4 @@ druid.indexer.logs.directory=var/druid/indexing-logs
 
 ### 进一步阅读
 
-更多关于从Hadoop加载数据的信息，可以查看[Druid Hadoop批量摄取文档]()
+更多关于从Hadoop加载数据的信息，可以查看[Druid Hadoop批量摄取文档](../DataIngestion/hadoopbased.md)

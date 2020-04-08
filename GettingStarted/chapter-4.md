@@ -67,7 +67,7 @@ Druid Broker服务接收查询请求，并将其转发到集群中的其他部�
 
 如果您的使用场景具有复杂的扩展要求，则还可以选择不将Druid服务混合部署（例如，独立的Historical Server）。
 
-[基本集群调整指南]()中的信息可以帮助您进行决策，并可以调整配置大小。
+[基本集群调整指南](../Operations/basicClusterTuning.md)中的信息可以帮助您进行决策，并可以调整配置大小。
 
 #### 从单服务器环境迁移部署
 
@@ -97,7 +97,7 @@ Query服务的硬件选择主要考虑可用的CPU、Broker服务的堆内和堆
 
 对于CPU，可以选择接近于单服务器环境核数1/4的硬件。
 
-[基本集群调优指南]()包含有关如何计算Broker和Router服务内存使用量的信息。
+[基本集群调优指南](../Operations/basicClusterTuning.md)包含有关如何计算Broker和Router服务内存使用量的信息。
 
 ### 选择操作系统
 
@@ -142,7 +142,7 @@ cd apache-druid-0.17.0
 ### 配置元数据存储和深度存储
 #### 从单服务器环境迁移部署
 
-如果您已经有一个单服务器部署，并且希望在整个迁移过程中保留数据，请在更新元数据/深层存储配置之前，按照[元数据迁移]()和[深层存储迁移]()中的说明进行操作。
+如果您已经有一个单服务器部署，并且希望在整个迁移过程中保留数据，请在更新元数据/深层存储配置之前，按照[元数据迁移](../Operations/metadataMigration.md)和[深层存储迁移](../Operations/DeepstorageMigration.md)中的说明进行操作。
 
 这些指南针对使用Derby元数据存储和本地深度存储的单服务器部署。 如果您已经在单服务器集群中使用了非Derby元数据存储，则可以在新集群中可以继续使用当前的元数据存储。
 
@@ -157,7 +157,7 @@ cd apache-druid-0.17.0
 
 在生产部署中，我们建议运行专用的元数据存储，例如具有复制功能的MySQL或PostgreSQL，与Druid服务器分开部署。
 
-[MySQL扩展]()和[PostgreSQL]()扩展文档包含有关扩展配置和初始数据库安装的说明。
+[MySQL扩展](../Configuration/core-ext/mysql.md)和[PostgreSQL](../Configuration/core-ext/postgresql.md)扩展文档包含有关扩展配置和初始数据库安装的说明。
 
 #### 深度存储
 
@@ -192,7 +192,7 @@ druid.indexer.logs.type=s3
 druid.indexer.logs.s3Bucket=your-bucket
 druid.indexer.logs.s3Prefix=druid/indexing-logs
 ```
-更多信息可以看[S3扩展]()部分的文档。
+更多信息可以看[S3扩展](../Configuration/core-ext/s3.md)部分的文档。
 
 ##### HDFS
 
@@ -224,7 +224,7 @@ druid.indexer.logs.directory=/druid/indexing-logs
 
 * 需要将Hadoop的配置文件（core-site.xml, hdfs-site.xml, yarn-site.xml, mapred-site.xml）放置在Druid进程的classpath中，可以将他们拷贝到`conf/druid/cluster/_common`目录中
 
-更多信息可以看[HDFS扩展]()部分的文档。
+更多信息可以看[HDFS扩展](../Configuration/core-ext/hdfs.md)部分的文档。
 
 ### Hadoop连接配置
 
@@ -235,7 +235,7 @@ druid.indexer.logs.directory=/druid/indexing-logs
 
 请注意，您无需为了可以从Hadoop加载数据而使用HDFS深度存储。例如，如果您的集群在Amazon Web Services上运行，即使您使用Hadoop或Elastic MapReduce加载数据，我们也建议使用S3进行深度存储。
 
-更多信息可以看[基于Hadoop的数据摄取]()部分的文档。
+更多信息可以看[基于Hadoop的数据摄取](../DataIngestion/hadoopbased.md)部分的文档。
 
 ### Zookeeper连接配置
 
@@ -324,7 +324,7 @@ druid.indexer.fork.property.druid.processing.numThreads=1
 
 `conf/druid/cluster`下的配置已经为此硬件确定了，一般情况下您无需做进一步的修改。
 
-如果您选择了其他硬件，则[基本的集群调整指南]()可以帮助您调整配置大小。
+如果您选择了其他硬件，则[基本的集群调整指南](../Operations/basicClusterTuning.md)可以帮助您调整配置大小。
 
 ### 开启端口(如果使用了防火墙)
 
@@ -400,7 +400,7 @@ bin/start-cluster-data-server
 bin/start-cluster-query-server
 ```
 
-您可以根据查询负载添加更多查询服务器。 如果增加了查询服务器的数量，请确保按照[基本集群调优指南]()中的说明调整Historical和Task上的连接池。
+您可以根据查询负载添加更多查询服务器。 如果增加了查询服务器的数量，请确保按照[基本集群调优指南](../Operations/basicClusterTuning.md)中的说明调整Historical和Task上的连接池。
 
 ### 加载数据
 

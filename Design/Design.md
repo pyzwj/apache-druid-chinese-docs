@@ -67,7 +67,7 @@ Druid数据被存储在"datasources"中，类似于传统RDBMS中的表。每一
 
 有关段文件格式的信息，请参见[段文件](Segments.md)
 
-有关数据在Druid的建模，请参见[schema设计]()
+有关数据在Druid的建模，请参见[schema设计](../DataIngestion/schemadesign.md)
 
 #### 索引和切换(Indexing and handoff)
 
@@ -127,7 +127,7 @@ clarity-cloud0_2018-05-21T16:00:00.000Z_2018-05-21T17:00:00.000Z_2018-05-21T15:5
 
 ### 查询处理
 
-查询首先进入[Broker](), Broker首先鉴别哪些段可能与本次查询有关。 段的列表总是按照时间进行筛选和修剪的，当然也可能由其他属性，具体取决于数据源的分区方式。然后，Broker将确定哪些[Historical]()和[MiddleManager]()为这些段提供服务、并向每个进程发送一个子查询。 Historical和MiddleManager进程接收查询、处理查询并返回结果，Broker将接收到的结果合并到一起形成最后的结果集返回给调用者。
+查询首先进入[Broker](../Design/Broker.md), Broker首先鉴别哪些段可能与本次查询有关。 段的列表总是按照时间进行筛选和修剪的，当然也可能由其他属性，具体取决于数据源的分区方式。然后，Broker将确定哪些[Historical](../Design/Historical.md)和[MiddleManager](../Design/MiddleManager.md)为这些段提供服务、并向每个进程发送一个子查询。 Historical和MiddleManager进程接收查询、处理查询并返回结果，Broker将接收到的结果合并到一起形成最后的结果集返回给调用者。
 
 Broker精简是Druid限制每个查询扫描数据量的一个重要方法，但不是唯一的方法。对于比Broker更细粒度级别的精简筛选器，每个段中的索引结构允许Druid在查看任何数据行之前，找出哪些行（如果有的话）与筛选器集匹配。一旦Druid知道哪些行与特定查询匹配，它就只访问该查询所需的特定列。在这些列中，Druid可以从一行跳到另一行，避免读取与查询过滤器不匹配的数据。
 

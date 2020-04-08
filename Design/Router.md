@@ -86,7 +86,7 @@ Router有一个可配置的策略列表，用于选择将查询路由到哪个Br
 ```
 
 > [!WARNING]
-> 默认情况下禁用基于JavaScript的功能。有关使用Druid的JavaScript功能的指南，包括如何启用它的说明，请参阅[Druid JavaScript编程指南]()。
+> 默认情况下禁用基于JavaScript的功能。有关使用Druid的JavaScript功能的指南，包括如何启用它的说明，请参阅[Druid JavaScript编程指南](../Development/JavaScript.md)。
 
 ### Avatica查询平衡
 

@@ -80,7 +80,7 @@ Druid的体系结构需要一个主时间列（内部存储为名为__time的列
 
 运行 `SELECT * FROM wikipedia` 查询可以看到详细的结果。
 
-查看[查询教程]()以对新加载的数据运行一些示例查询。
+查看[查询教程](../Querying/makeNativeQueries.md)以对新加载的数据运行一些示例查询。
 
 ### 使用spec加载数据（通过控制台）
 
@@ -211,4 +211,4 @@ curl -X 'POST' -H 'Content-Type:application/json' -d @quickstart/tutorial/wikipe
 
 ### 更多信息
 
-更多关于加载批数据的信息可以查看[原生批摄取文档]()
+更多关于加载批数据的信息可以查看[原生批摄取文档](../DataIngestion/native.md)
