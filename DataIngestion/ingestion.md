@@ -350,9 +350,181 @@ Druid数据源总是按时间划分为*时间块*，每个时间块包含一个�
 | createBitmapIndex | 对于字符串类型的维度，是否应为生成的段中的列创建位图索引。创建位图索引需要更多存储空间，但会加快某些类型的筛选（特别是相等和前缀筛选）。仅支持字符串类型的维度。| `true` |
 
 ###### `Inclusions and exclusions`
+Druid以两种可能的方式来解释 `dimensionsSpec` : *normal* 和 *schemaless*
+
+当 `dimensions` 或者 `spatialDimensions` 为非空时， 将会采用正常的解释方式。 在该情况下， 前边说的两个列表结合起来的集合当做摄入的维度集合。
+
+当 `dimensions` 和 `spatialDimensions` 同时为空或者null时候，将会采用无模式的解释方式。 在该情况下，维度集合由以下方式决定：
+1. 首先，从 [`inputFormat`](./dataformats.md) (或者 [`flattenSpec`](./dataformats.md#FlattenSpec), 如果正在使用 )中所有输入字段集合开始 
+2. 排除掉任何在 `dimensionExclusions` 中的列
+3. 排除掉在 [`timestampSpec`](#timestampspec) 中的时间列
+4. 排除掉 [`metricsSpec`](#metricsspec) 中用于聚合器输入的列
+5. 排除掉 [`metricsSpec`](#metricsspec) 中任何与聚合器同名的列
+6. 所有的其他字段都被按照[默认配置](#dimensionspec)摄入为 `string` 类型的维度
+
+> [!WARNING]
+> 注意：在无模式的维度解释方式中，由 [`transformSpec`](#transformspec) 生成的列当前并未考虑。
+
 ##### `metricsSpec`
+
+`metricsSpec` 位于 `dataSchema` -> `metricsSpec` 中，是一个在摄入阶段要应用的 [聚合器](../Querying/Aggregations.md) 列表。 在启用了 [rollup](#rollup) 时是很有用的，因为它将配置如何在摄入阶段进行聚合。
+
+一个 `metricsSpec` 实例如下：
+```
+"metricsSpec": [
+  { "type": "count", "name": "count" },
+  { "type": "doubleSum", "name": "bytes_added_sum", "fieldName": "bytes_added" },
+  { "type": "doubleSum", "name": "bytes_deleted_sum", "fieldName": "bytes_deleted" }
+]
+```
+> [!WARNING]
+> 通常，当 [rollup](#rollup) 被禁用时，应该有一个空的 `metricsSpec`（因为没有rollup，Druid不会在摄取时进行任何的聚合，所以没有理由包含摄取时聚合器）。但是，在某些情况下，定义Metrics仍然是有意义的：例如，如果要创建一个复杂的列作为 [近似聚合](../Querying/Aggregations.md#近似聚合) 的预计算部分，则只能通过在 `metricsSpec` 中定义度量来实现
+
 ##### `granularitySpec`
+
+`granularitySpec` 位于 `dataSchema` -> `granularitySpec`, 用来配置以下操作：
+1. 通过 `segmentGranularity` 来将数据源分区到 [时间块](../Design/Design.md#数据源和段)
+2. 如果需要的话，通过 `queryGranularity` 来截断时间戳
+3. 通过 `interval` 来指定批摄取中应创建段的时间块
+4. 通过 `rollup` 来指定是否在摄取时进行汇总
+
+除了 `rollup`, 这些操作都是基于 [主时间戳列](#主时间戳列)
+
+一个 `granularitySpec` 实例如下：
+```
+"granularitySpec": {
+  "segmentGranularity": "day",
+  "queryGranularity": "none",
+  "intervals": [
+    "2013-08-31/2013-09-01"
+  ],
+  "rollup": true
+}
+```
+
+`granularitySpec` 可以有以下的部分：
+
+| 字段 | 描述 | 默认值 |
+|-|-|-|
+| type | `uniform` 或者 `arbitrary` ，大多数时候使用 `uniform` | `uniform` |
+| segmentGranularity | 数据源的 [时间分块](../Design/Design.md#数据源和段) 粒度。每个时间块可以创建多个段, 例如，当设置为 `day` 时，同一天的事件属于同一时间块，该时间块可以根据其他配置和输入大小进一步划分为多个段。这里可以提供任何粒度。请注意，同一时间块中的所有段应具有相同的段粒度。 <br><br> 如果 `type` 字段设置为 `arbitrary` 则忽略 | `day` |
+| queryGranularity | 每个段内时间戳存储的分辨率, 必须等于或比 `segmentGranularity` 更细。这将是您可以查询的最细粒度，并且仍然可以查询到合理的结果。但是请注意，您仍然可以在比此粒度更粗的场景进行查询，例如 "`minute`"的值意味着记录将以分钟的粒度存储，并且可以在分钟的任意倍数（包括分钟、5分钟、小时等）进行查询。<br><br> 这里可以提供任何 [粒度](../Querying/AggregationGranularity.md) 。使用 `none` 按原样存储时间戳，而不进行任何截断。请注意，即使将 `queryGranularity` 设置为 `none`，也将应用 `rollup`。 | `none` |
+| rollup | 是否在摄取时使用 [rollup](#rollup)。 注意：即使 `queryGranularity` 设置为 `none`，rollup也仍然是有效的，当数据具有相同的时间戳时数据将被汇总 | `true` |
+| interval | 描述应该创建段的时间块的间隔列表。如果 `type` 设置为`uniform`，则此列表将根据 `segmentGranularity` 进行拆分和舍入。如果 `type` 设置为 `arbitrary` ，则将按原样使用此列表。<br><br> 如果该值不提供或者为空值，则批处理摄取任务通常会根据在输入数据中找到的时间戳来确定要输出的时间块。<br><br> 如果指定，批处理摄取任务可以跳过确定分区阶段，这可能会导致更快的摄取。批量摄取任务也可以预先请求它们的所有锁，而不是逐个请求。批处理摄取任务将丢弃任何时间戳超出指定间隔的记录。<br><br> 在任何形式的流摄取中忽略该配置。 | `null` |
+
 ##### `transformSpec`
+`transformSpec` 位于 `dataSchema` -> `transformSpec`，用来摄取时转换和过滤输入数据。 一个 `transformSpec` 实例如下：
+```
+"transformSpec": {
+  "transforms": [
+    { "type": "expression", "name": "countryUpper", "expression": "upper(country)" }
+  ],
+  "filter": {
+    "type": "selector",
+    "dimension": "country",
+    "value": "San Serriffe"
+  }
+}
+```
+
+> [!WARNING]
+> 概念上，输入数据被读取后，Druid会以一个特定的顺序来对数据应用摄入规范： 首先 `flattenSpec`(如果有)，然后 `timestampSpec`, 然后 `transformSpec` ,最后是 `dimensionsSpec` 和 `metricsSpec`。在编写摄入规范时需要牢记这一点
+
 ##### 过时的 `dataSchema` 规范
+> [!WARNING]
+> 
+> `dataSchema` 规范在0.17.0版本中做了更改，新的规范支持除*Hadoop摄取方式*外的所有方式。 可以在 [`dataSchema`](#dataschema)查看老的规范
+
+除了上面 `dataSchema` 一节中列出的组件之外，过时的 `dataSchema` 规范还有以下两个组件。
+* [input row parser](), [flatten of nested data]()
+
+**parser**(已废弃)
+在过时的 `dataSchema` 中，`parser` 位于 `dataSchema` -> `parser`中，负责配置与解析输入记录相关的各种项。由于 `parser` 已经废弃，不推荐使用，强烈建议改用 `inputFormat`。 对于 `inputFormat` 和支持的 `parser` 类型，可以参见 [数据格式](dataformats.md)。
+
+`parseSpec`主要部分的详细，参见他们的子部分：
+* [`timestampSpec`](#timestampspec), 配置 [主时间戳列](#主时间戳列)
+* [`dimensionsSpec`](#dimensionspec), 配置 [维度](#维度)
+* [`flattenSpec`](./dataformats.md#FlattenSpec) 
+
+一个 `parser` 实例如下：
+
+```
+"parser": {
+  "type": "string",
+  "parseSpec": {
+    "format": "json",
+    "flattenSpec": {
+      "useFieldDiscovery": true,
+      "fields": [
+        { "type": "path", "name": "userId", "expr": "$.user.id" }
+      ]
+    },
+    "timestampSpec": {
+      "column": "timestamp",
+      "format": "auto"
+    },
+    "dimensionsSpec": {
+      "dimensions": [
+        { "type": "string", "page" },
+        { "type": "string", "language" },
+        { "type": "long", "name": "userId" }
+      ]
+    }
+  }
+}
+```
+**flattenSpec**
+在过时的 `dataSchema` 中，`flattenSpec` 位于`dataSchema` -> `parser` -> `parseSpec` -> `flattenSpec`中，负责在潜在的嵌套输入数据（如JSON、Avro等）和Druid的数据模型之间架起桥梁。有关详细信息，请参见 [flattenSpec](./dataformats.md#FlattenSpec) 。
+
 #### `ioConfig`
+
+`ioConfig` 影响从源系统（如Apache Kafka、Amazon S3、挂载的文件系统或任何其他受支持的源系统）读取数据的方式。`inputFormat` 属性适用于除Hadoop摄取之外的[所有摄取方法](#摄入方式)。Hadoop摄取仍然使用过时的 `dataSchema` 中的 [parser]。`ioConfig` 的其余部分特定于每个单独的摄取方法。读取JSON数据的 `ioConfig` 示例如下：
+```
+"ioConfig": {
+    "type": "<ingestion-method-specific type code>",
+    "inputFormat": {
+      "type": "json"
+    },
+    ...
+}
+```
+详情可以参见每个 [摄取方式](#摄入方式) 提供的文档。
+
 #### `tuningConfig`
+
+优化属性在 `tuningConfig` 中指定，`tuningConfig` 位于摄取规范的顶层。有些属性适用于所有摄取方法，但大多数属性特定于每个单独的摄取方法。`tuningConfig` 将所有共享的公共属性设置为默认值的示例如下：
+```
+"tuningConfig": {
+  "type": "<ingestion-method-specific type code>",
+  "maxRowsInMemory": 1000000,
+  "maxBytesInMemory": <one-sixth of JVM memory>,
+  "indexSpec": {
+    "bitmap": { "type": "concise" },
+    "dimensionCompression": "lz4",
+    "metricCompression": "lz4",
+    "longEncoding": "longs"
+  },
+  <other ingestion-method-specific properties>
+}
+```
+
+| 字段 | 描述 | 默认值 |
+|-|-|-|
+| type | 每一种摄入方式都有自己的类型，必须指定为与摄入方式匹配的类型。通常的选项有 `index`, `hadoop`, `kafka` 和 `kinesis` | | 
+| maxRowsInMemory | 数据持久化到硬盘前在内存中存储的最大数据条数。 注意，这个数字是汇总后的，所以可能并不等于输入的记录数。 当摄入的数据达到 `maxRowsInMemory` 或者 `maxBytesInMemory` 时数据将被持久化到硬盘。 | `1000000` |
+| maxBytesInMemory | 在持久化之前要存储在JVM堆中的数据最大字节数。这是基于对内存使用的粗略估计。当达到 `maxRowsInMemory` 或`maxBytesInMemory` 时（以先发生的为准），摄取的记录将被持久化到磁盘。<br><br>将 `maxBytesInMemory` 设置为-1将禁用此检查，这意味着Druid将完全依赖 `maxRowsInMemory` 来控制内存使用。将其设置为零意味着将使用默认值（JVM堆大小的六分之一）。<br><br> 请注意，内存使用量的估计值被设计为高估值，并且在使用复杂的摄取时聚合器（包括sketches）时可能特别高。如果这导致索引工作负载过于频繁地持久化到磁盘，则可以将 `maxBytesInMemory` 设置为-1并转而依赖 `maxRowsInMemory`。 | JVM堆内存最大值的1/6 |
+| indexSpec | 优化数据如何被索引，详情可以看下面的表格 | 看下面的表格 |
+| 其他属性 | 每一种摄入方式都有其自己的优化属性。 详情可以查看每一种方法的文档。 [Kafka索引服务](kafka.md), [Kinesis索引服务](kinesis.md), [本地批](native.md) 和 [Hadoop批](hadoopbased.md) | |
+
+**`indexSpec`**
+
+上边表格中的 `indexSpec` 部分可以包含以下属性：
+
+| 字段 | 描述 | 默认值 |
+|-|-|-|
+| bitmap | 位图索引的压缩格式。 需要一个 `type` 设置为 `concise` 或者 `roaring` 的JSON对象。对于 `roaring`类型，布尔属性`compressRunOnSerialization`（默认为true）控制在确定运行长度编码更节省空间时是否使用该编码。 | `{"type":"concise"}` |
+| dimensionCompression | 维度列的压缩格式。 可选项有 `lz4`, `lzf` 或者 `uncompressed` | `lz4` |
+| metricCompression | Metrics列的压缩格式。可选项有 `lz4`, `lzf`, `uncompressed` 或者 `none`(`none` 比 `uncompressed` 更有效，但是在老版本的Druid不支持) | `lz4` |
+| longEncoding | long类型列的编码格式。无论它们是维度还是Metrics，都适用，选项是 `auto` 或 `long`。`auto` 根据列基数使用偏移量或查找表对值进行编码，并以可变大小存储它们。`longs` 按原样存储值，每个值8字节。 | `longs` |
+
+除了这些属性之外，每个摄取方法都有自己的特定调整属性。有关详细信息，请参阅每个 [摄取方法](#摄入方式) 的文档。
