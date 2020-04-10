@@ -84,6 +84,7 @@ JSON `inputFormat` 有以下组件：
 ```
 
 CSV `inputFormat` 有以下组件：
+
 | 字段 | 类型 | 描述 | 是否必填 |
 |-|-|-|-|
 | type | String | 填 `csv` | 是 |
