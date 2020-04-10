@@ -90,11 +90,64 @@ CSV `inputFormat` 有以下组件：
 | type | String | 填 `csv` | 是 |
 | listDelimiter | String | 多值维度的定制分隔符 | 否(默认ctrl + A) |
 | columns | JSON数组 | 指定数据的列。列的顺序应该与数据列的顺序相同。 | 如果 `findColumnsFromHeader` 设置为 `false` 或者缺失， 则为必填项 |
-| findColumnsFromHeader | 布尔 | 如果设置了此选项，则任务将从标题行中查找列名。请注意，在从标题中查找列名之前，将首先使用 `skipHeaderRows`。例如，如果将 `skipHeaderRows` 设置为2，将 `findColumnsFromHeader` 设置为 `true`，则任务将跳过前两行，然后从第三行提取列信息。该项如果设置为true，则将忽略 `columns`。| 否（如果 `columns` 被设置则默认为 `false`, 否则为null） |
-| skipHeaderRows | 整型数值 | 该项如果设置，任务将略过 `skipHeaderRows`配置的行数。 | 否（默认为0） |
+| findColumnsFromHeader | 布尔 | 如果设置了此选项，则任务将从标题行中查找列名。请注意，在从标题中查找列名之前，将首先使用 `skipHeaderRows`。例如，如果将 `skipHeaderRows` 设置为2，将 `findColumnsFromHeader` 设置为 `true`，则任务将跳过前两行，然后从第三行提取列信息。该项如果设置为true，则将忽略 `columns` | 否（如果 `columns` 被设置则默认为 `false`, 否则为null） |
+| skipHeaderRows | 整型数值 | 该项如果设置，任务将略过 `skipHeaderRows`配置的行数 | 否（默认为0） |
 
 #### TSV(Delimited)
+```
+"ioConfig": {
+  "inputFormat": {
+    "type": "tsv",
+    "columns" : ["timestamp","page","language","user","unpatrolled","newPage","robot","anonymous","namespace","continent","country","region","city","added","deleted","delta"],
+    "delimiter":"|"
+  },
+  ...
+}
+```
+TSV `inputFormat` 有以下组件：
+
+| 字段 | 类型 | 描述 | 是否必填 |
+|-|-|-|-|
+| type | String | 填 `tsv` | 是 |
+| delimiter | String | 数据值的自定义分隔符 | 否(默认为 `\t`) |
+| listDelimiter | String | 多值维度的定制分隔符 | 否(默认ctrl + A) |
+| columns | JSON数组 | 指定数据的列。列的顺序应该与数据列的顺序相同。 | 如果 `findColumnsFromHeader` 设置为 `false` 或者缺失， 则为必填项 |
+| findColumnsFromHeader | 布尔 | 如果设置了此选项，则任务将从标题行中查找列名。请注意，在从标题中查找列名之前，将首先使用 `skipHeaderRows`。例如，如果将 `skipHeaderRows` 设置为2，将 `findColumnsFromHeader` 设置为 `true`，则任务将跳过前两行，然后从第三行提取列信息。该项如果设置为true，则将忽略 `columns` | 否（如果 `columns` 被设置则默认为 `false`, 否则为null） |
+| skipHeaderRows | 整型数值 | 该项如果设置，任务将略过 `skipHeaderRows`配置的行数 | 否（默认为0） |
+
+请确保将分隔符更改为适合于数据的分隔符。与CSV一样，您必须指定要索引的列和列的子集。
+
 #### ORC
+
+> [!WARNING]
+> 使用ORC输入格式之前，首先需要包含 [druid-core-extensions](../Development/orc-extensions.md) 
+
+> [!WARNING]
+> 如果您正在考虑从早于0.15.0的版本升级到0.15.0或更高版本，请仔细阅读 [从contrib扩展的迁移](../Development/orc-extensions.md#从contrib扩展迁移)。
+
+一个加载ORC格式数据的 `inputFormat` 示例：
+```
+"ioConfig": {
+  "inputFormat": {
+    "type": "orc",
+    "flattenSpec": {
+      "useFieldDiscovery": true,
+      "fields": [
+        {
+          "type": "path",
+          "name": "nested",
+          "expr": "$.path.to.nested"
+        }
+      ]
+    }
+    "binaryAsString": false
+  },
+  ...
+}
+```
+
+ORC `inputFormat` 有以下组件：
+
 #### Parquet
 #### FlattenSpec
 ### Parser
