@@ -120,7 +120,7 @@ TSV `inputFormat` 有以下组件：
 #### ORC
 
 > [!WARNING]
-> 使用ORC输入格式之前，首先需要包含 [druid-core-extensions](../Development/orc-extensions.md) 
+> 使用ORC输入格式之前，首先需要包含 [druid-orc-extensions](../Development/orc-extensions.md) 
 
 > [!WARNING]
 > 如果您正在考虑从早于0.15.0的版本升级到0.15.0或更高版本，请仔细阅读 [从contrib扩展的迁移](../Development/orc-extensions.md#从contrib扩展迁移)。
@@ -148,8 +148,118 @@ TSV `inputFormat` 有以下组件：
 
 ORC `inputFormat` 有以下组件：
 
+| 字段 | 类型 | 描述 | 是否必填 |
+|-|-|-|-|
+| type | String | 填 `orc` | 是 |
+| flattenSpec | JSON对象 | 指定嵌套JSON数据的展平配置。更多信息请参见[flattenSpec](#flattenspec) | 否 |
+| binaryAsString | 布尔类型 | 指定逻辑上未标记为字符串的二进制orc列是否应被视为UTF-8编码字符串。 | 否（默认为false） |
+
 #### Parquet
+
+> [!WARNING]
+> 使用Parquet输入格式之前，首先需要包含 [druid-parquet-extensions](../Development/parquet-extensions.md) 
+
+一个加载Parquet格式数据的 `inputFormat` 示例：
+```
+"ioConfig": {
+  "inputFormat": {
+    "type": "parquet",
+    "flattenSpec": {
+      "useFieldDiscovery": true,
+      "fields": [
+        {
+          "type": "path",
+          "name": "nested",
+          "expr": "$.path.to.nested"
+        }
+      ]
+    }
+    "binaryAsString": false
+  },
+  ...
+}
+```
+
+Parquet `inputFormat` 有以下组件：
+
+| 字段 | 类型 | 描述 | 是否必填 |
+|-|-|-|-|
+| type | String | 填 `parquet` | 是 |
+| flattenSpec | JSON对象 | 定义一个 [flattenSpec](#flattenspec) 从Parquet文件提取嵌套的值。注意，只支持"path"表达式（'jq'不可用）| 否（默认自动发现根级别的属性） |
+| binaryAsString | 布尔类型 | 指定逻辑上未标记为字符串的二进制orc列是否应被视为UTF-8编码字符串。 | 否（默认为false） |
+
 #### FlattenSpec
+
+`flattenSpec` 位于 `inputFormat` -> `flattenSpec` 中，负责将潜在的嵌套输入数据（如JSON、Avro等）和Druid的平面数据模型之间架起桥梁。 `flattenSpec` 示例如下：
+```
+"flattenSpec": {
+  "useFieldDiscovery": true,
+  "fields": [
+    { "name": "baz", "type": "root" },
+    { "name": "foo_bar", "type": "path", "expr": "$.foo.bar" },
+    { "name": "first_food", "type": "jq", "expr": ".thing.food[1]" }
+  ]
+}
+```
+> [!WARNING]
+> 概念上，输入数据被读取后，Druid会以一个特定的顺序来对数据应用摄入规范： 首先 `flattenSpec`(如果有)，然后 `timestampSpec`, 然后 `transformSpec` ,最后是 `dimensionsSpec` 和 `metricsSpec`。在编写摄入规范时需要牢记这一点
+
+展平操作仅仅支持嵌套的 [数据格式](dataformats.md), 包括：`avro`, `json`, `orc` 和 `parquet`。
+
+`flattenSpec` 有以下组件：
+
+| 字段 | 描述 | 默认值 |
+|-|-|-|
+| useFieldDiscovery | 如果为true，则将所有根级字段解释为可用字段，供 [`timestampSpec`](../DataIngestion/ingestion.md#timestampSpec)、[`transformSpec`](../DataIngestion/ingestion.md#transformSpec)、[`dimensionsSpec`](../DataIngestion/ingestion.md#dimensionsSpec) 和 [`metricsSpec`](../DataIngestion/ingestion.md#metricsSpec) 使用。<br><br> 如果为false，则只有显式指定的字段（请参阅 `fields`）才可供使用。 | true |
+| fields | 指定感兴趣的字段及其访问方式, 详细请见下边 | `[]` |
+
+**字段展平规范**
+
+`fields` 列表中的每个条目都可以包含以下组件：
+
+<table>
+  <thead>
+    <tr>
+      <td>字段</td>
+      <td>描述</td>
+      <td>默认值</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td>
+        可选项如下：
+        <ul>
+          <li><code>root</code>, 引用记录根级别的字段。只有当<code>useFieldDiscovery</code> 为false时才真正有用。</li>
+          <li><code>path</code>, 引用使用 <a href="https://github.com/json-path/JsonPath">JsonPath</a> 表示法的字段，支持大多数提供嵌套的数据格式，包括<code>avro</code>,<code>csv</code>, <code>json</code> 和 <code>parquet</code></li>
+          <li><code>jq</code>, 引用使用 <a href="https://github.com/eiiches/jackson-jq">jackson-jq</a> 表示法的字段， 仅仅支持<code>json</code>格式</li>
+        </ul>
+      </td>
+      <td>none(必填)</td>
+    </tr>
+    <tr>
+      <td>name</td>
+      <td>展平后的字段名称。这个名称可以被<code>timestampSpec</code>, <code>transformSpec</code>, <code>dimensionsSpec</code>和<code>metricsSpec</code>引用</td>
+      <td>none(必填)</td>
+    </tr>
+    <tr>
+      <td>expr</td>
+      <td>用于在展平时访问字段的表达式。对于类型 `path`，这应该是 <a href="https://github.com/json-path/JsonPath">JsonPath</a>。对于 `jq` 类型，这应该是 <a href="https://github.com/eiiches/jackson-jq">jackson-jq</a> 表达式。对于其他类型，将忽略此参数。</td>
+      <td>none(对于 `path` 和 `jq` 类型的为必填)</td>
+    </tr>
+  </tbody>
+</table>
+
+**展平操作的注意事项**
+
+* 为了方便起见，在定义根级字段时，可以只将字段名定义为字符串，而不是JSON对象。例如 `{"name": "baz", "type": "root"}` 等价于 `baz`
+* 启用 `useFieldDiscovery` 只会在根级别自动检测与Druid支持的数据类型相对应的"简单"字段, 这包括字符串、数字和字符串或数字列表。不会自动检测到其他类型，其他类型必须在 `fields` 列表中显式指定
+* 不允许重复字段名（`name`）, 否则将引发异常
+* 如果启用 `useFieldDiscovery`，则将跳过与字段列表中已定义的字段同名的任何已发现字段，而不是添加两次
+* [http://jsonpath.herokuapp.com/](http://jsonpath.herokuapp.com/) 对于测试 `path`-类型表达式非常有用
+* jackson jq支持完整 [`jq`](https://stedolan.github.io/jq/)语法的一个子集。有关详细信息，请参阅 [jackson jq](https://github.com/eiiches/jackson-jq) 文档
+
 ### Parser
 #### String Parser
 #### Avro Hadoop Parser
