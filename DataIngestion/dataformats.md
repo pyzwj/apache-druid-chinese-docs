@@ -261,9 +261,95 @@ Parquet `inputFormat` 有以下组件：
 * jackson jq支持完整 [`jq`](https://stedolan.github.io/jq/)语法的一个子集。有关详细信息，请参阅 [jackson jq](https://github.com/eiiches/jackson-jq) 文档
 
 ### Parser
+
+> [!WARNING]
+> parser在 [本地批任务](native.md), [Kafka索引任务](kafka.md) 和 [Kinesis索引任务](kinesis.md) 中已经废弃，在这些类型的摄入方式中考虑使用 [inputFormat](#数据格式)
+
+该部分列出来了所有默认的以及核心扩展中的解析器。对于社区的扩展解析器，请参见 [社区扩展列表](../Development/extensions.md#社区扩展)
+
 #### String Parser
+
+`string` 类型的解析器对基于文本的输入进行操作，这些输入可以通过换行符拆分为单独的记录, 可以使用 [`parseSpec`](#parsespec) 进一步分析每一行。
+
+| 字段 | 类型 | 描述 | 是否必须 |
+|-|-|-|-|
+| type | string | 一般是 `string`, 在Hadoop索引任务中为 `hadoopyString` | 是 |
+| parseSpec | JSON对象 | 指定格式，数据的timestamp和dimensions | 是 |
+
 #### Avro Hadoop Parser
+
+> [!WARNING]
+> 需要添加 [druid-avro-extensions](../Development/avro-extensions.md) 来使用 Avro Hadoop解析器
+
+该解析器用于 [Hadoop批摄取](hadoopbased.md)。在 `ioConfig` 中，`inputSpec` 中的 `inputFormat` 必须设置为 `org.apache.druid.data.input.avro.AvroValueInputFormat`。您可能想在 `tuningConfig` 中的 `jobProperties` 选项设置Avro reader的schema， 例如：`"avro.schema.input.value.path": "/path/to/your/schema.avsc"` 或者 `"avro.schema.input.value": "your_schema_JSON_object"`。如果未设置Avro读取器的schema，则将使用Avro对象容器文件中的schema，详情可以参见 [avro规范](http://avro.apache.org/docs/1.7.7/spec.html#Schema+Resolution)
+
+| 字段 | 类型 | 描述 | 是否必填 |
+|-|-|-|-|
+| type | String | 应该填 `avro_hadoop` | 是 |
+| parseSpec | JSON对象 | 指定数据的时间戳和维度。应该是“avro”语法规范。| 是 |
+
+Avro parseSpec可以包含使用"root"或"path"字段类型的 [flattenSpec](#flattenspec)，这些字段类型可用于读取嵌套的Avro记录。Avro当前不支持“jq”字段类型。
+
+例如，使用带有自定义读取器schema文件的Avro Hadoop解析器：
+```
+{
+  "type" : "index_hadoop",
+  "spec" : {
+    "dataSchema" : {
+      "dataSource" : "",
+      "parser" : {
+        "type" : "avro_hadoop",
+        "parseSpec" : {
+          "format": "avro",
+          "timestampSpec": <standard timestampSpec>,
+          "dimensionsSpec": <standard dimensionsSpec>,
+          "flattenSpec": <optional>
+        }
+      }
+    },
+    "ioConfig" : {
+      "type" : "hadoop",
+      "inputSpec" : {
+        "type" : "static",
+        "inputFormat": "org.apache.druid.data.input.avro.AvroValueInputFormat",
+        "paths" : ""
+      }
+    },
+    "tuningConfig" : {
+       "jobProperties" : {
+          "avro.schema.input.value.path" : "/path/to/my/schema.avsc"
+      }
+    }
+  }
+}
+```
+
 #### ORC Hadoop Parser
+
+> [!WARNING]
+> 需要添加 [druid-orc-extensions](../Development/orc-extensions.md) 来使用ORC Hadoop解析器
+
+> [!WARNING]
+> 如果您正在考虑从早于0.15.0的版本升级到0.15.0或更高版本，请仔细阅读 [从contrib扩展的迁移](../Development/orc-extensions.md#从contrib扩展迁移)。
+
+该解析器用于 [Hadoop批摄取](hadoopbased.md)。在 `ioConfig` 中，`inputSpec` 中的 `inputFormat` 必须设置为 `org.apache.orc.mapreduce.OrcInputFormat`。
+
+| 字段 | 类型 | 描述 | 是否必填 |
+|-|-|-|-|
+| type | String | 应该填 `orc` | 是 |
+| parseSpec | JSON对象 | 指定数据(`timeAndDim` 和 `orc` 格式)的时间戳和维度和一个`flattenSpec`（`orc`格式）| 是 |
+
+解析器支持两种 `parseSpec` 格式： `orc` 和 `timeAndDims`
+
+`orc` 支持字段的自动发现和展平（如果指定了 [flattenSpec](#flattenspec)。如果未指定展平规范，则默认情况下将启用 `useFieldDiscovery`。如果启用了 `useFieldDiscovery`，则指定`dimensionSpec` 是可选的：如果提供了 `dimensionSpec`，则它定义的维度列表将是摄取维度的集合，如果缺少发现的字段将构成该列表。
+
+`timeAndDims` 解析规范必须通过 `dimensionSpec` 指定哪些字段将提取为维度。
+
+支持所有 [列类型](https://orc.apache.org/docs/types.html) ，但 `union` 类型除外。`list` 类型的列（如果用基本类型填充）可以用作多值维度，或者可以使用 [flattenSpec](#flattenspec) 表达式提取特定元素。同样，可以用同样的方式从 `map` 和 `struct` 类型中提取基本字段。自动字段发现将自动为每个（非时间戳）基本类型或基本类型 `list` 以及 `flattenSpec` 中定义的任何展平表达式创建字符串维度。
+
+**Hadoop job属性**
+
+像大多数Hadoop作业，
 #### Parquet Hadoop Parser
 #### Parquet Avro Hadoop Parser
 #### Avro Stream Parser
