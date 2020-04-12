@@ -349,7 +349,206 @@ Avro parseSpec可以包含使用"root"或"path"字段类型的 [flattenSpec](#fl
 
 **Hadoop job属性**
 
-像大多数Hadoop作业，
+像大多数Hadoop作业，最佳结果是在 `tuningConfig` 中的 `jobProperties` 中添加 `"mapreduce.job.user.classpath.first": "true"` 或者 `"mapreduce.job.classloader": "true"`。 注意，如果使用了 `"mapreduce.job.classloader": "true"`, 需要设置 `mapreduce.job.classloader.system.classes` 包含 `-org.apache.hadoop.hive.` 来让Hadoop从应用jars包中加载 `org.apache.hadoop.hive` 而非从系统jar中，例如：
+
+```
+...
+    "mapreduce.job.classloader": "true",
+    "mapreduce.job.classloader.system.classes" : "java., javax.accessibility., javax.activation., javax.activity., javax.annotation., javax.annotation.processing., javax.crypto., javax.imageio., javax.jws., javax.lang.model., -javax.management.j2ee., javax.management., javax.naming., javax.net., javax.print., javax.rmi., javax.script., -javax.security.auth.message., javax.security.auth., javax.security.cert., javax.security.sasl., javax.sound., javax.sql., javax.swing., javax.tools., javax.transaction., -javax.xml.registry., -javax.xml.rpc., javax.xml., org.w3c.dom., org.xml.sax., org.apache.commons.logging., org.apache.log4j., -org.apache.hadoop.hbase., -org.apache.hadoop.hive., org.apache.hadoop., core-default.xml, hdfs-default.xml, mapred-default.xml, yarn-default.xml",
+...
+```
+
+这是因为 `orc-mapreduce` 库的配置单元 `hive-storage-api` 依赖关系，它在 `org.apache.hadoop.hive` 包下提供了一些类。如果改为使用`"mapreduce.job.user.classpath.first"："true"`设置，则不会出现此问题。
+
+**示例**
+
+**`orc` parser, `orc` parseSpec, 自动字段发现, 展平表达式**
+```
+{
+  "type": "index_hadoop",
+  "spec": {
+    "ioConfig": {
+      "type": "hadoop",
+      "inputSpec": {
+        "type": "static",
+        "inputFormat": "org.apache.orc.mapreduce.OrcInputFormat",
+        "paths": "path/to/file.orc"
+      },
+      ...
+    },
+    "dataSchema": {
+      "dataSource": "example",
+      "parser": {
+        "type": "orc",
+        "parseSpec": {
+          "format": "orc",
+          "flattenSpec": {
+            "useFieldDiscovery": true,
+            "fields": [
+              {
+                "type": "path",
+                "name": "nestedDim",
+                "expr": "$.nestedData.dim1"
+              },
+              {
+                "type": "path",
+                "name": "listDimFirstItem",
+                "expr": "$.listDim[1]"
+              }
+            ]
+          },
+          "timestampSpec": {
+            "column": "timestamp",
+            "format": "millis"
+          }
+        }
+      },
+      ...
+    },
+    "tuningConfig": <hadoop-tuning-config>
+    }
+  }
+}
+```
+
+**`orc` parser, `orc` parseSpec, 不具有 `flattenSpec` 或者 `dimensionSpec`的字段发现**
+
+```
+{
+  "type": "index_hadoop",
+  "spec": {
+    "ioConfig": {
+      "type": "hadoop",
+      "inputSpec": {
+        "type": "static",
+        "inputFormat": "org.apache.orc.mapreduce.OrcInputFormat",
+        "paths": "path/to/file.orc"
+      },
+      ...
+    },
+    "dataSchema": {
+      "dataSource": "example",
+      "parser": {
+        "type": "orc",
+        "parseSpec": {
+          "format": "orc",
+          "timestampSpec": {
+            "column": "timestamp",
+            "format": "millis"
+          }
+        }
+      },
+      ...
+    },
+    "tuningConfig": <hadoop-tuning-config>
+    }
+  }
+}
+```
+**`orc` parser, `orc` parseSpec, 非自动发现**
+
+```
+{
+  "type": "index_hadoop",
+  "spec": {
+    "ioConfig": {
+      "type": "hadoop",
+      "inputSpec": {
+        "type": "static",
+        "inputFormat": "org.apache.orc.mapreduce.OrcInputFormat",
+        "paths": "path/to/file.orc"
+      },
+      ...
+    },
+    "dataSchema": {
+      "dataSource": "example",
+      "parser": {
+        "type": "orc",
+        "parseSpec": {
+          "format": "orc",
+          "flattenSpec": {
+            "useFieldDiscovery": false,
+            "fields": [
+              {
+                "type": "path",
+                "name": "nestedDim",
+                "expr": "$.nestedData.dim1"
+              },
+              {
+                "type": "path",
+                "name": "listDimFirstItem",
+                "expr": "$.listDim[1]"
+              }
+            ]
+          },
+          "timestampSpec": {
+            "column": "timestamp",
+            "format": "millis"
+          },
+          "dimensionsSpec": {
+            "dimensions": [
+              "dim1",
+              "dim3",
+              "nestedDim",
+              "listDimFirstItem"
+            ],
+            "dimensionExclusions": [],
+            "spatialDimensions": []
+          }
+        }
+      },
+      ...
+    },
+    "tuningConfig": <hadoop-tuning-config>
+    }
+  }
+}
+```
+
+**`orc` parser, `timeAndDims` parseSpec**
+
+```
+{
+  "type": "index_hadoop",
+  "spec": {
+    "ioConfig": {
+      "type": "hadoop",
+      "inputSpec": {
+        "type": "static",
+        "inputFormat": "org.apache.orc.mapreduce.OrcInputFormat",
+        "paths": "path/to/file.orc"
+      },
+      ...
+    },
+    "dataSchema": {
+      "dataSource": "example",
+      "parser": {
+        "type": "orc",
+        "parseSpec": {
+          "format": "timeAndDims",
+          "timestampSpec": {
+            "column": "timestamp",
+            "format": "auto"
+          },
+          "dimensionsSpec": {
+            "dimensions": [
+              "dim1",
+              "dim2",
+              "dim3",
+              "listDim"
+            ],
+            "dimensionExclusions": [],
+            "spatialDimensions": []
+          }
+        }
+      },
+      ...
+    },
+    "tuningConfig": <hadoop-tuning-config>
+  }
+}
+```
+
 #### Parquet Hadoop Parser
 #### Parquet Avro Hadoop Parser
 #### Avro Stream Parser
