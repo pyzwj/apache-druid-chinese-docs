@@ -895,6 +895,50 @@ Avro Bytes Decorder首先提取输入消息的 `subject` 和 `id`， 然后使�
 ```
 
 #### Protobuf Parser
+
+> [!WARNING]
+> 需要添加 [druid-protobuf-extensions](../Development/protobuf-extensions.md) 来使用Protobuf解析器
+
+此解析器用于 [流接收](streamingest.md)，并直接从流中读取协议缓冲区数据。
+
+| 字段 | 类型 | 描述 | 是否必须 |
+|-|-|-|-|
+| type | String | `protobuf` | 是 |
+| descriptor | String | 类路径或URL中的Protobuf描述符文件名 | 是 |
+| protoMessageType | String | 描述符中的Protobuf消息类型。可接受短名称和全限定名称。如果未指定，解析器将使用描述符中找到的第一个消息类型 | 否 |
+| parseSpec | JSON对象 | 指定数据的时间戳和维度。格式必须为JSON。有关更多配置选项，请参阅 [JSON ParseSpec](#json)。请注意，不再支持timeAndDims parseSpec | 是 |
+
+样例规范：
+```
+"parser": {
+  "type": "protobuf",
+  "descriptor": "file:///tmp/metrics.desc",
+  "protoMessageType": "Metrics",
+  "parseSpec": {
+    "format": "json",
+    "timestampSpec": {
+      "column": "timestamp",
+      "format": "auto"
+    },
+    "dimensionsSpec": {
+      "dimensions": [
+        "unit",
+        "http_method",
+        "http_code",
+        "page",
+        "metricType",
+        "server"
+      ],
+      "dimensionExclusions": [
+        "timestamp",
+        "value"
+      ]
+    }
+  }
+}
+```
+有关更多详细信息和示例，请参见 [扩展说明](../Development/protobuf-extensions.md)。
+
 ### ParseSpec
 #### JSON解析规范
 #### JSON Lowercase解析规范
