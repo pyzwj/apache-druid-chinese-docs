@@ -43,7 +43,7 @@
             "className": "atoc"
         },
         "tbfed-pagefooter": {
-            "copyright": "<a href='http://www.beian.miit.gov.cn/'>渝ICP备16001958号</a> | Copyright © 2020 apache-druid.cn <script>var _hmt = _hmt || [];(function () {var hm = document.createElement('script');hm.src = 'https://hm.baidu.com/hm.js?64996a33a8398031b9c5db062efce549';var s = document.getElementsByTagName('script')[0];s.parentNode.insertBefore(hm, s);})(); </script>",
+            "copyright": "<a href=\"http://www.beian.miit.gov.cn/\">渝ICP备16001958号</a> | Copyright © 2020 apache-druid.cn <script>var _hmt = _hmt || [];(function () {var hm = document.createElement(\"script\");hm.src = \"https://hm.baidu.com/hm.js?64996a33a8398031b9c5db062efce549\";var s = document.getElementsByTagName(\"script\")[0];s.parentNode.insertBefore(hm, s);})(); </script>",
             "modify_label": "最近一次修改时间：",
             "modify_format": "YYYY-MM-DD HH:mm:ss"
         }
