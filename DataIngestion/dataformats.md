@@ -851,6 +851,49 @@ Avro parseSpec包含一个使用"root"或者"path"类型的 [`flattenSpec`](inge
 
 **基于Avro Bytes Decoder的 `SchemaRepo`**
 
+Avro Bytes Decorder首先提取输入消息的 `subject` 和 `id`， 然后使用她们去查找用来解码Avro记录的Avro schema，详情可以参见 [Schema repo](https://github.com/schema-repo/schema-repo) 和 [AVRO-1124](https://issues.apache.org/jira/browse/AVRO-1124) 。 您需要一个类似schema repo的http服务来保存avro模式。有关在消息生成器端注册架构的信息，请见 `org.apache.druid.data.input.AvroStreamInputRowParserTest#testParse()`
+
+| 字段 | 类型 | 描述 | 是否必须 |
+|-|-|-|-|
+| type | String | `schema_repo` | 否 |
+| subjectAndIdConverter | JSON对象 | 指定如何从消息字节中提取subject和id | 是 |
+| schemaRepository | JSON对象 | 指定如何从subject和id查找Avro Schema | 是 |
+
+**Avro-1124 Subject 和 Id 转换器**
+这部分描述了 `schema_avro` avro 字节解码器中的 `subjectAndIdConverter` 的格式
+
+| 字段 | 类型 | 描述 | 是否必须 |
+|-|-|-|-|
+| type | String | `avro_1124` | 否 |
+| topic | String | 指定Kafka流的主题 | 是 |
+
+**Avro-1124 Schema Repository**
+这部分描述了 `schema_avro` avro 字节解码器中的 `schemaRepository` 的格式
+
+| 字段 | 类型 | 描述 | 是否必须 |
+|-|-|-|-|
+| type | String | `avro_1124_rest_client` | 否 |
+| url | String | 指定Avro-1124 schema repository的http url | 是 |
+
+**Confluent Schema Registry-based Avro Bytes Decoder**
+
+这个Avro字节解码器首先从输入消息字节中提取一个唯一的id，然后使用它在用于从字节解码Avro记录的模式注册表中查找模式。有关详细信息，请参阅schema注册 [文档](https://docs.confluent.io/current/schema-registry/index.html) 和 [存储库](https://github.com/confluentinc/schema-registry)。
+
+| 字段 | 类型 | 描述 | 是否必须 |
+|-|-|-|-|
+| type | String | `schema_registry` | 否 |
+| url | String | 指定架构注册表的url | 是 |
+| capacity | 整型数字 | 指定缓存的最大值（默认为 Integer.MAX_VALUE）| 否 |
+
+```
+...
+"avroBytesDecoder" : {
+   "type" : "schema_registry",
+   "url" : <schema-registry-url>
+}
+...
+```
+
 #### Protobuf Parser
 ### ParseSpec
 #### JSON解析规范
