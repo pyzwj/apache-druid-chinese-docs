@@ -940,13 +940,201 @@ Avro Bytes Decorder首先提取输入消息的 `subject` 和 `id`， 然后使�
 有关更多详细信息和示例，请参见 [扩展说明](../Development/protobuf-extensions.md)。
 
 ### ParseSpec
+
+> [!WARNING]
+> Parser 在 [本地批任务](native.md), [kafka索引任务](kafka.md) 和[Kinesis索引任务](kinesis.md) 中已经废弃，在这些类型的摄入中考虑使用 [inputFormat](#InputFormat)
+
+`parseSpec` 有两个目的：
+* String解析器使用 `parseSpec` 来决定输入行的格式（例如： JSON，CSV，TSV）
+* 所有的解析器使用 `parseSpec` 来决定输入行的timestamp和dimensions
+
+如果 `format` 没有被包含，`parseSpec` 默认为 `tsv`
+
 #### JSON解析规范
+与字符串解析器一起用于加载JSON。
+
+| 字段 | 类型 | 描述 | 是否必填 |
+|-|-|-|-|
+| format | String | `json` | 否 |
+| timestampSpec | JSON对象 | 指定timestamp的列和格式 | 是 |
+| dimensionsSpec | JSON对象 | 指定数据的dimensions | 是 |
+| flattenSpec | JSON对象 | 指定嵌套的JSON数据的展平配置，详情可见 [flattenSpec](#flattenspec) | 否 |
+
+示例规范：
+```
+"parseSpec": {
+  "format" : "json",
+  "timestampSpec" : {
+    "column" : "timestamp"
+  },
+  "dimensionSpec" : {
+    "dimensions" : ["page","language","user","unpatrolled","newPage","robot","anonymous","namespace","continent","country","region","city"]
+  }
+}
+```
+
 #### JSON Lowercase解析规范
+
+> [!WARNING]
+> `JsonLowerCase` 解析器已经废弃，并可能在Druid将来的版本中移除
+
+这是JSON ParseSpec的一个特殊变体，它将传入JSON数据中的所有列名小写。如果您正在从Druid 0.6.x更新到druid0.7.x，正在直接接收具有混合大小写列名的JSON，没有任何ETL来将这些列名转换大小写，并且希望进行包含使用0.6.x和0.7.x创建的数据的查询，则需要此parseSpec。
+
+| 字段 | 类型 | 描述 | 是否必填 |
+|-|-|-|-|
+| format | String | `jsonLowerCase` | 是 |
+| timestampSpec | JSON对象 | 指定timestamp的列和格式 | 是 |
+| dimensionsSpec | JSON对象 | 指定数据的dimensions | 是 |
+
 #### CSV解析规范
+
+与字符串解析器一起用于加载CSV， 字符串通过使用 `com.opencsv` 库来进行解析。
+
+| 字段 | 类型 | 描述 | 是否必填 |
+|-|-|-|-|
+| format | String | `csv` | 是 |
+| timestampSpec | JSON对象 | 指定timestamp的列和格式 | 是 |
+| dimensionsSpec | JSON对象 | 指定数据的dimensions | 是 |
+| listDelimiter | String | 多值维度的定制分隔符 | 否（默认为 `ctrl + A`）|
+| columns | JSON数组 | 指定数据的列 | 是 |
+
+示例规范：
+```
+"parseSpec": {
+  "format" : "csv",
+  "timestampSpec" : {
+    "column" : "timestamp"
+  },
+  "columns" : ["timestamp","page","language","user","unpatrolled","newPage","robot","anonymous","namespace","continent","country","region","city","added","deleted","delta"],
+  "dimensionsSpec" : {
+    "dimensions" : ["page","language","user","unpatrolled","newPage","robot","anonymous","namespace","continent","country","region","city"]
+  }
+}
+```
+
+**CSV索引任务**
+
+如果输入文件包含头，则 `columns` 字段是可选的，不需要设置。相反，您可以将 `hasHeaderRow` 字段设置为 `true`，这将使Druid自动从标题中提取列信息。否则，必须设置 `columns` 字段，并确保该字段必须以相同的顺序与输入数据的列匹配。
+
+另外，可以通过在parseSpec中设置 `skipHeaderRows` 跳过一些标题行。如果同时设置了 `skipHeaderRows` 和 `HashHeaderRow` 选项，则首先应用`skipHeaderRows` 。例如，如果将 `skipHeaderRows` 设置为2，`hasHeaderRow` 设置为true，Druid将跳过前两行，然后从第三行提取列信息。
+
+请注意，`hasHeaderRow` 和 `skipHeaderRows` 仅对非Hadoop批索引任务有效。其他类型的索引任务将失败，并出现异常。
+
+**其他CSV摄入任务**
+
+必须包含 `columns` 字段，并确保字段的顺序与输入数据的列以相同的顺序匹配。
+
 #### TSV/Delimited解析规范
+
+与字符串解析器一起使用此命令可加载不需要特殊转义的任何分隔文本。默认情况下，分隔符是一个制表符，因此这将加载TSV。
+
+| 字段 | 类型 | 描述 | 是否必填 |
+|-|-|-|-|
+| format | String | `csv` | 是 |
+| timestampSpec | JSON对象 | 指定timestamp的列和格式 | 是 |
+| dimensionsSpec | JSON对象 | 指定数据的dimensions | 是 |
+| delimiter | String | 数据值的定制分隔符 | 否（默认为 `\t`）|
+| listDelimiter | String | 多值维度的定制分隔符 | 否（默认为 `ctrl + A`）|
+| columns | JSON数组 | 指定数据的列 | 是 |
+
+示例规范：
+```
+"parseSpec": {
+  "format" : "tsv",
+  "timestampSpec" : {
+    "column" : "timestamp"
+  },
+  "columns" : ["timestamp","page","language","user","unpatrolled","newPage","robot","anonymous","namespace","continent","country","region","city","added","deleted","delta"],
+  "delimiter":"|",
+  "dimensionsSpec" : {
+    "dimensions" : ["page","language","user","unpatrolled","newPage","robot","anonymous","namespace","continent","country","region","city"]
+  }
+}
+```
+请确保将 `delimiter` 更改为数据的适当分隔符。与CSV一样，您必须指定要索引的列和列的子集。
+
+**TSV(Delimited)索引任务**
+
+如果输入文件包含头，则 `columns` 字段是可选的，不需要设置。相反，您可以将 `hasHeaderRow` 字段设置为 `true`，这将使Druid自动从标题中提取列信息。否则，必须设置 `columns` 字段，并确保该字段必须以相同的顺序与输入数据的列匹配。
+
+另外，可以通过在parseSpec中设置 `skipHeaderRows` 跳过一些标题行。如果同时设置了 `skipHeaderRows` 和 `HashHeaderRow` 选项，则首先应用`skipHeaderRows` 。例如，如果将 `skipHeaderRows` 设置为2，`hasHeaderRow` 设置为true，Druid将跳过前两行，然后从第三行提取列信息。
+
+请注意，`hasHeaderRow` 和 `skipHeaderRows` 仅对非Hadoop批索引任务有效。其他类型的索引任务将失败，并出现异常。
+
+**其他TSV(Delimited)摄入任务**
+
+必须包含 `columns` 字段，并确保字段的顺序与输入数据的列以相同的顺序匹配。
+
 #### 多值维度
+
+对于TSV和CSV数据，维度可以有多个值。要为多值维度指定分隔符，请在`parseSpec` 中设置 `listDelimiter`。
+
+JSON数据也可以包含多值维度。维度的多个值必须在接收的数据中格式化为 `JSON数组`，不需要额外的 `parseSpec` 配置。
+
 #### 正则解析规范
+```
+"parseSpec":{
+  "format" : "regex",
+  "timestampSpec" : {
+    "column" : "timestamp"
+  },
+  "dimensionsSpec" : {
+    "dimensions" : [<your_list_of_dimensions>]
+  },
+  "columns" : [<your_columns_here>],
+  "pattern" : <regex pattern for partitioning data>
+}
+```
+
+`columns` 字段必须以相同的顺序与regex匹配组的列匹配。如果未提供列，则默认列名称（“column_1”、“column2”、…”列“）将被分配, 确保列名包含所有维度
+
 #### JavaScript解析规范
+```
+"parseSpec":{
+  "format" : "javascript",
+  "timestampSpec" : {
+    "column" : "timestamp"
+  },
+  "dimensionsSpec" : {
+    "dimensions" : ["page","language","user","unpatrolled","newPage","robot","anonymous","namespace","continent","country","region","city"]
+  },
+  "function" : "function(str) { var parts = str.split(\"-\"); return { one: parts[0], two: parts[1] } }"
+}
+```
+
+注意: JavaScript解析器必须完全解析数据，并在JS逻辑中以 `{key:value}` 格式返回。这意味着任何展平或解析多维值都必须在这里完成。
+
+> [!WARNING]
+> 默认情况下禁用基于JavaScript的功能。有关使用Druid的JavaScript功能的指南，包括如何启用它的说明，请参阅 [Druid JavaScript编程指南](../Development/JavaScript.md)。
+
 #### 时间和维度解析规范
+
+与非字符串解析器一起使用，为它们提供时间戳和维度信息。非字符串解析器独立处理所有格式化决策，而不使用ParseSpec。
+
+| 字段 | 类型 | 描述 | 是否必填 |
+|-|-|-|-|
+| format | String | `timeAndDims` | 是 |
+| timestampSpec | JSON对象 | 指定timestamp的列和格式 | 是 |
+| dimensionsSpec | JSON对象 | 指定数据的dimensions | 是 |
+
 #### Orc解析规范
+
+与Hadoop ORC解析器一起使用来加载ORC文件
+
+| 字段 | 类型 | 描述 | 是否必填 |
+|-|-|-|-|
+| format | String | `orc` | 否 |
+| timestampSpec | JSON对象 | 指定timestamp的列和格式 | 是 |
+| dimensionsSpec | JSON对象 | 指定数据的dimensions | 是 |
+| flattenSpec | JSON对象 | 指定嵌套的JSON数据的展平配置，详情可见 [flattenSpec](#flattenspec) | 否 |
+
 #### Parquet解析规范
+
+与Hadoop Parquet解析器一起使用来加载Parquet文件
+
+| 字段 | 类型 | 描述 | 是否必填 |
+|-|-|-|-|
+| format | String | `parquet` | 否 |
+| timestampSpec | JSON对象 | 指定timestamp的列和格式 | 是 |
+| dimensionsSpec | JSON对象 | 指定数据的dimensions | 是 |
+| flattenSpec | JSON对象 | 指定嵌套的JSON数据的展平配置，详情可见 [flattenSpec](#flattenspec) | 否 |
