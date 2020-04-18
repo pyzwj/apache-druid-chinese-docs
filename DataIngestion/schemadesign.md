@@ -87,5 +87,68 @@ Druid可以在接收数据时将其汇总，以最小化需要存储的原始数
 有关如何配置数值维度的详细信息，请参阅 [`dimensionsSpec`文档](ingestion.md#dimensionsSpec)
 
 #### 辅助时间戳
+
+Druid schema必须始终包含一个主时间戳, 主时间戳用于对数据进行 [分区和排序](ingestion.md#分区)，因此它应该是您最常筛选的时间戳。Druid能够快速识别和检索与主时间戳列的时间范围相对应的数据。
+
+如果数据有多个时间戳，则可以将其他时间戳作为辅助时间戳摄取。最好的方法是将它们作为 [毫秒格式的Long类型维度](ingestion.md#dimensionsspec) 摄取。如有必要，可以使用 [`transformSpec`](ingestion.md#transformspec) 和 `timestamp_parse` 等 [表达式](../Misc/expression.md) 将它们转换成这种格式，后者返回毫秒时间戳。
+
+在查询时，可以使用诸如 `MILLIS_TO_TIMESTAMP`、`TIME_FLOOR` 等 [SQL时间函数](../Querying/druidsql.md) 查询辅助时间戳。如果您使用的是原生Druid查询，那么可以使用 [表达式](../Misc/expression.md)。
+
+#### 嵌套维度
+
+在编写本文时，Druid不支持嵌套维度。嵌套维度需要展平，例如，如果您有以下数据：
+```
+{"foo":{"bar": 3}}
+```
+
+然后在编制索引之前，应将其转换为：
+```
+{"foo_bar": 3}
+```
+
+Druid能够将JSON、Avro或Parquet输入数据展平化。请阅读 [展平规格](ingestion.md#flattenspec) 了解更多细节。
+
 #### 计数接收事件数
+
+启用rollup后，查询时的计数聚合器(count aggregator)实际上不会告诉您已摄取的行数。它们告诉您Druid数据源中的行数，可能小于接收的行数。
+
+在这种情况下，可以使用*摄取时*的计数聚合器来计算事件数。但是，需要注意的是，在查询此Metrics时，应该使用 `longSum` 聚合器。查询时的 `count` 聚合器将返回时间间隔的Druid行数，该行数可用于确定rollup比率。
+
+为了举例说明，如果摄取规范包含：
+```
+...
+"metricsSpec" : [
+      {
+        "type" : "count",
+        "name" : "count"
+      },
+...
+```
+
+您应该使用查询:
+```
+...
+"aggregations": [
+    { "type": "longSum", "name": "numIngestedEvents", "fieldName": "count" },
+...
+```
+
 #### 无schema的维度列
+
+如果摄取规范中的 `dimensions` 字段为空，Druid将把不是timestamp列、已排除的维度和metric列之外的每一列都视为维度。
+
+注意，当使用无schema摄取时，所有维度都将被摄取为字符串类型的维度。
+
+##### 包含与Dimension和Metric相同的列
+
+一个具有唯一ID的工作流能够对特定ID进行过滤，同时仍然能够对ID列进行快速的唯一计数。如果不使用无schema维度，则通过将Metric的 `name` 设置为与维度不同的值来支持此场景。如果使用无schema维度，这里的最佳实践是将同一列包含两次，一次作为维度，一次作为 `hyperUnique` Metric。这可能涉及到ETL时的一些工作。
+
+例如，对于无schema维度，请重复同一列：
+```
+{"device_id_dim":123, "device_id_met":123}
+```
+同时在 `metricsSpec` 中包含：
+```
+{ "type" : "hyperUnique", "name" : "devices", "fieldName" : "device_id_met" }
+```
+`device_id_dim` 将自动作为维度来被选取
