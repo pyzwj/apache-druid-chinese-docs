@@ -2,13 +2,13 @@
 
 * [Druid概述](README.md)
 
-* [新手入门](GettingStarted/chapter-1.md)
+### 新手入门
   * [Druid介绍](GettingStarted/chapter-1.md)
   * [快速开始](GettingStarted/chapter-2.md)
   * [单服务器部署](GettingStarted/chapter-3.md)
   * [集群部署](GettingStarted/chapter-4.md)
 
-* [使用指导](Tutorials/chapter-1.md)
+### 使用指导
   * [加载本地文件](Tutorials/chapter-1.md)
   * [从Kafka加载数据](Tutorials/chapter-2.md)
   * [从Hadoop加载数据](Tutorials/chapter-3.md)
@@ -22,7 +22,7 @@
   * [转换输入数据](Tutorials/chapter-11.md)
   * [Kerberized HDFS存储](Tutorials/chapter-12.md)
 
-* [架构设计](Design/Design.md)
+### 架构设计
   * [整体设计](Design/Design.md)
   * [段设计](Design/Segments.md)
   * [进程与服务](Design/Processes.md)
@@ -38,7 +38,7 @@
   * [元数据存储](Design/Metadata.md)
   * [Zookeeper](Design/Zookeeper.md)
 
-* [数据摄取](DataIngestion/ingestion.md)
+### 数据摄取
   * [摄取概述](DataIngestion/ingestion.md)
   * [数据格式](DataIngestion/dataformats.md)
   * [schema设计](DataIngestion/schemadesign.md)
