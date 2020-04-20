@@ -138,7 +138,53 @@ Druid不支持按主键更新单个记录。
 我们建议保留一份原始数据的副本，以防您需要重新摄取它。
 
 #### 使用基于Hadoop的摄取
+
+本节假设读者理解如何使用Hadoop进行批量摄取。有关详细信息，请参见 [Hadoop批处理摄取](hadoopbased.md)。Hadoop批量摄取可用于重新索引数据和增量摄取数据。
+
+Druid使用 `ioConfig` 中的 `inputSpec` 来知道要接收的数据位于何处以及如何读取它。对于简单的Hadoop批接收，`static` 或 `granularity` 粒度规范类型允许您读取存储在深层存储中的数据。
+
+还有其他类型的 `inputSpec` 可以启用重新索引数据和增量接收数据。
+
 #### 使用原生批摄取重新索引
+
+本节假设读者了解如何使用 [原生批处理索引](native.md) 而不使用Hadoop的情况下执行批处理摄取（使用 `inputSource` 知道在何处以及如何读取输入数据）。[`DruidInputSource`](native.md#Druid输入源) 可以用来从Druid内部的段读取数据。请注意，**IndexTask**只用于原型设计，因为它必须在一个进程内完成所有处理，并且无法扩展。对于处理超过1GB数据的生产方案，请使用Hadoop批量摄取。
+
 ### 删除数据
-### 杀掉任务
+
+Druid支持永久的将标记为"unused"状态（详情可见架构设计中的 [段的生命周期](../Design/Design.md#段生命周期)）的段删除掉
+
+杀死任务负责从元数据存储和深度存储中删除掉指定时间间隔内的不被使用的段
+
+更多详细信息，可以看 [杀死任务](taskrefer.md#kill)
+
+永久删除一个段需要两步：
+1. 段必须首先标记为"未使用"。当用户通过Coordinator API手动禁用段时，就会发生这种情况
+2. 在段被标记为"未使用"之后，一个Kill任务将从Druid的元数据存储和深层存储中删除任何“未使用”的段
+
+对于数据保留规则的文档，可以详细看 [数据保留](../Operations/retainingOrDropData.md)
+
+对于通过Coordinator API来禁用段的文档，可以详细看 [Coordinator数据源API](../Operations/api.md#coordinator)
+
+在本文档中已经包含了一个删除删除的教程，请看 [数据删除教程](../Tutorials/chapter-9.md)
+
+### 杀死任务
+
+**杀死任务**删除段的所有信息并将其从深层存储中删除。在Druid的段表中，要杀死的段必须是未使用的（used==0）。可用语法为：
+```
+{
+    "type": "kill",
+    "id": <task_id>,
+    "dataSource": <task_datasource>,
+    "interval" : <all_segments_in_this_interval_will_die!>,
+    "context": <task context>
+}
+```
 ### 数据保留
+
+Druid支持保留规则，这些规则用于定义数据应保留的时间间隔和应丢弃数据的时间间隔。
+
+Druid还支持将Historical进程分成不同的层，并且可以将保留规则配置为将特定时间间隔的数据分配给特定的层。
+
+这些特性对于性能/成本管理非常有用；一个常见的场景是将Historical进程分为"热(hot)"层和"冷(cold)"层。
+
+有关详细信息，请参阅 [加载规则](../Operations/retainingOrDropData.md)。
