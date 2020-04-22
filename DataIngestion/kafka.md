@@ -96,6 +96,11 @@ curl -X POST -H 'Content-Type: application/json' -d @supervisor-spec.json http:/
 
 `tuningConfig` 是可选的， 如果未被配置的话，则使用默认的参数。
 
+| 字段 | 类型 | 描述 | 是否必须 |
+|-|-|-|-|
+| `type` | String | 索引任务类型， 总是 `kafka` | 是 |
+| `maxRowsInMemory` | Integer | 在持久化之前在内存中聚合的最大行数。该数值为聚合之后的行数，所以它不等于原始输入事件的行数，而是事件被聚合后的行数。 通常用来管理所需的JVM堆内存。 使用 `maxRowsInMemory * (2 + maxPendingPersists) ` 来当做索引任务的最大堆内存。通常用户不需要设置这个值，但是也需要根据数据的特点来决定，如果行的字节数较短，用户可能不想在内存中存储一百万行，应该设置这个值 | 否（默认为 1000000）|
+| `maxBytesInMemory` | Long | 在持久化之前在内存中聚合的最大字节数。这是基于对内存使用量的粗略估计，而不是实际使用量。通常这是在内部计算的，用户不需要设置它。 索引任务的最大内存使用量是 `maxRowsInMemory * (2 + maxPendingPersists) ` | 是 |
 
 #### KafkaSupervisorIOConfig
 ### 操作
