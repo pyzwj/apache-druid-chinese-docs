@@ -106,7 +106,22 @@ curl -X POST -H 'Content-Type: application/json' -d @supervisor-spec.json http:/
 | `intermediateHandoffPeriod` | ISO8601 Period | 确定触发持续化存储的周期 | 否（默认为 PT10M）|
 | `maxPendingPersists` | Integer | 正在等待但启动的持久化过程的最大数量。 如果新的持久化任务超过了此限制，则在当前运行的持久化完成之前，摄取将被阻止。索引任务的最大内存使用量是 `maxRowsInMemory * (2 + maxPendingPersists) ` | 否（默认为0，意味着一个持久化可以与摄取同时运行，而没有一个可以排队）|
 | `indexSpec` | Object | 调整数据被如何索引。详情可以见 [indexSpec](#indexspec) | 否 |
-| `indexSpecForIntermediatePersists` | | | 否（默认与 `indexSpec` 相同） |
+| `indexSpecForIntermediatePersists` | | 定义要在索引时用于中间持久化临时段的段存储格式选项。这可用于禁用中间段上的维度/度量压缩，以减少最终合并所需的内存。但是，在中间段上禁用压缩可能会增加页缓存的使用，而在它们被合并到发布的最终段之前使用它们，有关可能的值，请参阅IndexSpec。 | 否（默认与 `indexSpec` 相同） |
+| `reportParseExceptions` | Boolean | *已废弃*。如果为true，则在解析期间遇到的异常即停止摄取；如果为false，则将跳过不可解析的行和字段。将 `reportParseExceptions` 设置为 `true` 将覆盖`maxParseExceptions` 和 `maxSavedParseExceptions` 的现有配置，将`maxParseExceptions` 设置为 `0` 并将 `maxSavedParseExceptions` 限制为不超过1。 | 否（默认为false）|
+| `handoffConditionTimeout` | Long | 段切换（持久化）可以等待的毫秒数（超时时间）。 该值要被设置为大于0的数，设置为0意味着将会一直等待不超时 | 否（默认为0）|
+| `resetOffsetAutomatically` | Boolean | 控制当Druid需要读取Kafka中不可用的消息时的行为，比如当发生了 `OffsetOutOfRangeException` 异常时。 <br> 如果为false，则异常将抛出，这将导致任务失败并停止接收。如果发生这种情况，则需要手动干预来纠正这种情况；可能使用 [重置 Supervisor API](../Operations/api.md#Supervisor)。此模式对于生产非常有用，因为它将使您意识到摄取的问题。 <br> 如果为true，Druid将根据 `useEarliestOffset` 属性的值（`true` 为 `earliest`，`false` 为 `latest`）自动重置为Kafka中可用的较早或最新偏移量。请注意，这可能导致数据在您不知情的情况下*被丢弃*（如果`useEarliestOffset` 为 `false`）或 *重复*（如果 `useEarliestOffset` 为 `true`）。消息将被记录下来，以标识已发生重置，但摄取将继续。这种模式对于非生产环境非常有用，因为它将使Druid尝试自动从问题中恢复，即使这些问题会导致数据被安静删除或重复。 <br> 该特性与Kafka的 `auto.offset.reset` 消费者属性很相似 | 否（默认为false）|
+| `workerThreads` | Integer | supervisor用于异步操作的线程数。| 否（默认为: min(10, taskCount)） |
+| `chatThreads` | Integer | 与索引任务的会话线程数 | 否（默认为：min(10, taskCount * replicas)）|
+| `chatRetries` | Integer | 在任务没有响应之前，将重试对索引任务的HTTP请求的次数 | 否（默认为8）|
+| `httpTimeout` | ISO8601 Period | 索引任务的HTTP响应超时 | 否（默认为PT10S）|
+| `shutdownTimeout` | ISO8601 Period | supervisor尝试优雅的停掉一个任务的超时时间 | 否（默认为：PT80S）|
+| `offsetFetchPeriod` | ISO8601 Period | supervisor查询Kafka和索引任务以获取当前偏移和计算滞后的频率 | 否（默认为PT30S，最小为PT5S）|
+| `segmentWriteOutMediumFactory` | Object | 创建段时要使用的段写入介质。更多信息见下文。| 否（默认不指定，使用来源于 `druid.peon.defaultSegmentWriteOutMediumFactory.type` 的值）|
+| `intermediateHandoffPeriod` | ISO8601 Period | 段发生切换的频率。当 `maxRowsPerSegment` 或者 `maxTotalRows` 有一个值命中的时候，则触发handoff（数据落盘后传到深度存储）， 该动作也会按照每 `intermediateHandoffPeriod` 时间间隔发生一次。 | 否（默认为：P2147483647D）|
+| `logParseExceptions` | Boolean | 如果为true，则在发生解析异常时记录错误消息，其中包含有关发生错误的行的信息。| 否（默认为false）|
+| `maxParseExceptions` | Integer | 任务停止接收之前可发生的最大分析异常数。如果设置了 `reportParseExceptions`，则该值会被重写。| 否（默认为unlimited）|
+| `maxSavedParseExceptions` | Integer | 当出现解析异常时，Druid可以跟踪最新的解析异常。"maxSavedParseExceptions"决定将保存多少个异常实例。这些保存的异常将在 [任务完成报告](taskrefer.md#任务报告) 中的任务完成后可用。如果设置了`reportParseExceptions`，则该值会被重写。 | 否（默认为0）|
+
 
 #### KafkaSupervisorIOConfig
 ### 操作

@@ -3,6 +3,7 @@
 ### Master
 #### Coordinator
 #### Overlord
+##### Supervisor
 ### Data
 #### MiddleManager
 #### Peon
