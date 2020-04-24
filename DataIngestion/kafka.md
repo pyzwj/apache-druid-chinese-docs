@@ -122,6 +122,31 @@ curl -X POST -H 'Content-Type: application/json' -d @supervisor-spec.json http:/
 | `maxParseExceptions` | Integer | 任务停止接收之前可发生的最大分析异常数。如果设置了 `reportParseExceptions`，则该值会被重写。| 否（默认为unlimited）|
 | `maxSavedParseExceptions` | Integer | 当出现解析异常时，Druid可以跟踪最新的解析异常。"maxSavedParseExceptions"决定将保存多少个异常实例。这些保存的异常将在 [任务完成报告](taskrefer.md#任务报告) 中的任务完成后可用。如果设置了`reportParseExceptions`，则该值会被重写。 | 否（默认为0）|
 
+##### IndexSpec
+
+| 字段 | 类型 | 描述 | 是否必须 |
+|-|-|-|-|-|
+| `bitmap` | Object | 位图索引的压缩格式。 应该是一个JSON对象，详情见以下 | 否（默认为 `roaring`）|
+| `dimensionCompression` | String | 维度列的压缩格式。 从 `LZ4`, `LZF` 或者 `uncompressed` 选择 | 否（默认为 `LZ4`）|
+| `metricCompression` | String | Metrics列的压缩格式。 从 `LZ4`, `LZF`, `uncompressed` 或者 `none` 选择 | 否（默认为 `LZ4`）|
+| `longEncoding` | String | 类型为long的Metric列和维度列的编码格式。从 `auto` 或者 `longs` 中选择。`auto`编码是根据列基数使用偏移量或查找表对值进行编码，并以可变大小存储它们。`longs` 按原样存储值，每个值8字节。 | 否（默认为 `longs`）|
+
+**Bitmap类型**
+
+对于Roaring位图：
+
+| 字段 | 类型 | 描述 | 是否必须 |
+|-|-|-|-|
+| `type` | String | 必须为 `roaring` | 是 |
+| `compressRunOnSerialization` | Boolean | 使用一个运行长度编码，可以更节省空间 | 否（默认为 `true` ）|
+
+对于Concise位图：
+
+| 字段 | 类型 | 描述 | 是否必须 |
+|-|-|-|-|
+| `type` | String | 必须为 `concise` | 是 |
+
+##### SegmentWriteOutMediumFactory
 
 #### KafkaSupervisorIOConfig
 ### 操作
