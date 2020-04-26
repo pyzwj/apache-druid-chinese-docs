@@ -148,7 +148,29 @@ curl -X POST -H 'Content-Type: application/json' -d @supervisor-spec.json http:/
 
 ##### SegmentWriteOutMediumFactory
 
+| 字段 | 类型 | 描述 | 是否必须 |
+|-|-|-|-|
+| `type` | String | 对于可用选项，可以见 [额外的Peon配置：SegmentWriteOutMediumFactory](../Configuration/configuration.md#SegmentWriteOutMediumFactory) | 是 | 
+
 #### KafkaSupervisorIOConfig
+
+| 字段 | 类型 | 描述 | 是否必须 |
+|-|-|-|-|
+| `topic` | String | 要读取数据的Kafka主题。这必须是一个特定的主题，因为不支持主题模式 | 是 |
+| `inputFormat` | Object | [`inputFormat`](dataformats.md#inputformat) 指定如何解析输入数据。 看 [下边部分](#指定输入数据格式) 查看指定输入格式的详细信息。 | 是 |
+| `consumerProperties` | Map<String, Object> | 传给Kafka消费者的一组属性map。必须得包含 `bootstrap.servers` 的属性，其值为Kafka Broker列表，格式为: `<BROKER_1>:<PORT_1>,<BROKER_2>:<PORT_2>,...`。 对于SSL连接，`keystore`, `truststore` 和 `key` 密码可以被以一个字符串密码或者 [密码Provider](../Operations/passwordproviders.md) 来提供 | 是 |
+| `pollTimeout` | Long | Kafka消费者拉取消息记录的超时等待时间，毫秒单位 | 否（默认为100）|
+| `replicas` | Integer | 副本的数量，1意味着一个单一任务（无副本）。副本任务将始终分配给不同的worker，以提供针对流程故障的恢复能力。| 否（默认为1）|
+| `taskCount` | Integer | *一个副本集* 中*读取*任务的最大数量。 这意味着读取任务的最大的数量将是 `taskCount * replicas`, 任务总数（*读取 + 发布*）是大于这个数字的。 详情可以看下边的 [容量规划](#容量规划)。 如果 `taskCount > {numKafkaPartitions}`, 读取任务的数量会小于 `taskCount` | 否（默认为1）|
+| `taskDuration` | ISO8601 Period | 任务停止读取数据、开始发布段之前的时间长度 | 否（默认为PT1H）|
+| `startDelay` | ISO8601 Period | supervisor开始管理任务之前的等待时间 | 否（默认为PT5S）|
+| `useEarliestOffset` | Boolean | 如果supervisor是第一次管理数据源，它将从Kafka获得一组起始偏移。此标志确定它是检索Kafka中的最早偏移量还是最新偏移量。在正常情况下，后续任务将从先前段结束的位置开始，因此此标志将仅在首次运行时使用。 | 否（默认false）|
+| `completionTimeout` | ISO8601 Period | 声明发布任务为失败并终止它 之前等待的时间长度。如果设置得太低，则任务可能永远不会发布。任务的发布时刻大约在 `taskDuration` (任务持续)时间过后开始。 | 否（默认为PT30M）|
+| `lateMessageRejectionStartDateTime` | ISO8601 DateTime | 用来配置一个时间，当消息时间戳早于此日期时间的时候，消息被拒绝。 例如，如果该值设置为 `2016-01-01T11:00Z`, supervisor在 *`2016-01-01T12:00Z`* 创建了一个任务，时间戳早于 *2016-01-01T11:00Z* 的消息将会被丢弃。如果您的数据流有延迟消息，并且您有多个需要在同一段上操作的管道（例如实时和夜间批处理摄取管道），这可能有助于防止并发问题。 | 否（默认为none）|
+| `lateMessageRejectionPeriod` | ISO8601 Period | 用来配置一个时间周期，当消息时间戳早于此周期的时候，消息被拒绝。例如，如果该值设置为 `PT1H`, supervisor 在 `2016-01-01T12:00Z` 创建了一个任务，则时间戳早于 `2016-01-01T11:00Z` 的消息将被丢弃。 如果您的数据流有延迟消息，并且您有多个需要在同一段上操作的管道（例如实时和夜间批处理摄取管道），这可能有助于防止并发问题。 **请特别注意**，`lateMessageRejectionPeriod` 和 `lateMessageRejectionStartDateTime` 仅一个可以被指定。 | 否（默认none）|
+| `earlyMessageRejectionPeriod` | ISO8601 Period | 用来配置一个时间周期，当消息时间戳晚于此周期的时候，消息被拒绝。 例如，如果该值设置为 `PT1H`,supervisor 在 `2016-01-01T12:00Z` 创建了一个任务，则时间戳晚于 `2016-01-01T14:00Z` 的消息将被丢弃。**注意**，任务有时会超过其任务持续时间，例如，在supervisor故障转移的情况下。如果将 `earlyMessageRejectionPeriod` 设置得太低，则每当任务运行超过其最初配置的任务持续时间时，可能会导致消息意外丢弃。| 否（默认none）|
+
+##### 指定输入数据格式
 ### 操作
 #### 获取supervisor的状态报告
 #### 获取supervisor摄取状态报告
