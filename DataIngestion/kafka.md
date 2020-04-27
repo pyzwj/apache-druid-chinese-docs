@@ -171,6 +171,11 @@ curl -X POST -H 'Content-Type: application/json' -d @supervisor-spec.json http:/
 | `earlyMessageRejectionPeriod` | ISO8601 Period | 用来配置一个时间周期，当消息时间戳晚于此周期的时候，消息被拒绝。 例如，如果该值设置为 `PT1H`,supervisor 在 `2016-01-01T12:00Z` 创建了一个任务，则时间戳晚于 `2016-01-01T14:00Z` 的消息将被丢弃。**注意**，任务有时会超过其任务持续时间，例如，在supervisor故障转移的情况下。如果将 `earlyMessageRejectionPeriod` 设置得太低，则每当任务运行超过其最初配置的任务持续时间时，可能会导致消息意外丢弃。| 否（默认none）|
 
 ##### 指定输入数据格式
+
+Kafka索引服务同时支持通过 [`inputFormat`](dataformats.md#inputformat) 和 [`parser`](dataformats.md#parser) 来指定数据格式。 `inputFormat` 是一种新的且推荐的用于Kafka索引服务中指定数据格式的方式，但是很遗憾的是目前它还不支持过时的 `parser` 所有支持的所有格式（未来会支持）。
+
+`inputFormat` 支持的格式包括 [`csv`](dataformats.md#csv), [`delimited`](dataformats.md#TSV(Delimited)), [`json`](dataformats.md#json)。可以使用 `parser` 来读取 [`avro_stream`](dataformats.md#AvroStreamParser), [`protobuf`](dataformats.md#ProtobufParser), [`thrift`](../Development/thrift.md) 格式的数据。
+
 ### 操作
 #### 获取supervisor的状态报告
 #### 获取supervisor摄取状态报告
