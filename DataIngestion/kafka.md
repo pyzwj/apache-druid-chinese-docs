@@ -204,6 +204,16 @@ Kafka索引服务同时支持通过 [`inputFormat`](dataformats.md#inputformat) 
 | SUSPENDED | SUSPENDED | supervisor被挂起 |
 | STOPPING | STOPPING | supervisor正在停止 |
 
+在supervisor运行循环的每次迭代中，supervisor按顺序完成以下任务：
+
+1. 从Kafka获取分区列表并确定每个分区的起始偏移量（如果继续，则基于最后处理的偏移量，如果这是一个新主题，则从流的开始或结束开始）。
+2. 发现正在写入supervisor数据源的任何正在运行的索引任务，如果这些任务与supervisor的配置匹配，则采用这些任务，否则发出停止的信号。
+3. 向每个受监视的任务发送状态请求，以更新我们对受监视任务的状态的视图。
+4. 处理已超过 `taskDuration(任务持续时间)` 且应从读取状态转换为发布状态的任务。
+5. 处理已完成发布的任务，并发出停止冗余副本任务的信号。
+6. 处理失败的任务并清理supervisor的内部状态。
+7. 将正常任务列表与请求的 `taskCount` 和 `replicas` 进行比较，并根据需要创建其他任务。
+
 
 #### 获取supervisor摄取状态报告
 #### supervisor健康检测
