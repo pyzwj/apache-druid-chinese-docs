@@ -177,7 +177,34 @@ Kafka索引服务同时支持通过 [`inputFormat`](dataformats.md#inputformat) 
 `inputFormat` 支持的格式包括 [`csv`](dataformats.md#csv), [`delimited`](dataformats.md#TSV(Delimited)), [`json`](dataformats.md#json)。可以使用 `parser` 来读取 [`avro_stream`](dataformats.md#AvroStreamParser), [`protobuf`](dataformats.md#ProtobufParser), [`thrift`](../Development/thrift.md) 格式的数据。
 
 ### 操作
+
+本节描述了一些supervisor API如何在Kafka索引服务中具体工作。对于所有的supervisor API，请查看 [Supervisor APIs](../Operations/api.md#Supervisor)
+
 #### 获取supervisor的状态报告
+
+`GET /druid/indexer/v1/supervisor/<supervisorId>/status` 返回由给定supervisor管理的任务当前状态的快照报告。报告中包括Kafka报告的最新偏移量、每个分区的使用者延迟，以及所有分区的聚合延迟。如果supervisor没有收到来自Kafka的最新偏移响应，则每个分区的使用者延迟可以报告为负值。聚合滞后值将始终大于等于0。
+
+状态报告还包含supervisor的状态和最近引发的异常列表（报告为`recentErrors`，其最大大小可以使用 `druid.supervisor.maxStoredExceptionEvents` 配置进行控制）。有两个字段与supervisor的状态相关- `state` 和 `detailedState`。`state` 字段将始终是少数适用于任何类型的supervisor的通用状态之一，而 `detailedState` 字段将包含一个更具描述性的、特定实现的状态，该状态可以比通用状态字段更深入地了解supervisor的活动。
+
+`state` 可能的值列表为：[`PENDING`, `RUNNING`, `SUSPENDED`, `STOPPING`, `UNHEALTHY_SUPERVISOR`, `UNHEALTHY_TASKS`]
+
+`detailedState`值与它们相应的 `state` 映射关系如下：
+
+| Detailed State | 相应的State | 描述 |
+|-|-|-|
+| UNHEALTHY_SUPERVISOR | UNHEALTHY_SUPERVISOR | supervisor在过去的 `druid.supervisor.unhealthinessThreshold` 内已经发生了错误 |
+| UNHEALTHY_TASKS | UNHEALTHY_TASKS | 过去 `druid.supervisor.taskUnhealthinessThreshold` 内的任务全部失败了 |
+| UNABLE_TO_CONNECT_TO_STREAM | UNHEALTHY_SUPERVISOR | supervisor遇到与Kafka的连接问题，过去没有成功连接过 |
+| LOST_CONTACT_WITH_STREAM | UNHEALTHY_SUPERVISOR | supervisor遇到与Kafka的连接问题，但是在过去成功连接过 |
+| PENDING（仅在第一次迭代中）| PENDING | supervisor已初始化，尚未开始连接到流 |
+| CONNECTING_TO_STREAM（仅在第一次迭代中） | RUNNING | supervisor正在尝试连接到流并更新分区数据 |
+| DISCOVERING_INITIAL_TASKS（仅在第一次迭代中） | RUNNING | supervisor正在发现已在运行的任务 |
+| CREATING_TASKS（仅在第一次迭代中） | RUNNING | supervisor正在创建任务并发现状态 |
+| RUNNING | RUNNING | supervisor已启动任务，正在等待任务持续时间结束 |
+| SUSPENDED | SUSPENDED | supervisor被挂起 |
+| STOPPING | STOPPING | supervisor正在停止 |
+
+
 #### 获取supervisor摄取状态报告
 #### supervisor健康检测
 #### 更新现有的supervisor
